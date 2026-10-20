@@ -29,7 +29,7 @@ scene([
   mascot(-3.6, t, pop(t, 0.1), hop(t, at(0, "one"))) +   // b[i] = [start, end] of sentence i
   label("Title", 1.5, 2.3, 0.75, "blue", pop(t, at(1))));
 ```
-- Shapes: `label`, `blob`, `mascot`. Motion: `pop`, `out`, `hop`, `squash`, `blink`, `squint`,
+- Shapes: `label`, `blob`, `mascot`, `islander`. Motion: `pop`, `out`, `hop`, `squash`, `blink`, `squint`,
   `look`, `follow`, `glance`, `wave`, `spin`. A shape takes any number of motions. Each motion is a function of t.
 - Colors come from `PALETTE`. Use only these colors.
 - Frame: x from -5 to 5, z from -1.2 to 4.4 (up). The narrator is at x = -3.6. The subject is at the right.
@@ -43,6 +43,7 @@ The look: Grok Bot. A plain near-black stage, each body in 1 flat color from `PA
 the Grok Bot proportions (measured in `ref/`, written in `look.js`), the Inter SemiBold font.
 Characters are a soft blob with 2 big eyes. No arms, no mouth, no feet. They breathe, blink, squint and look around.
 - `mascot(x, t, ...)` is the narrator (hot pink ball).
+- `islander(x, t, color, eyes, ...)` is the bot of that body color with "blue" or "brown" eyes (the eye color of the story).
 - `blob(x, t, kind, ...)` draws a character. `CAST` holds the bots. Shapes: ball, pebble, squircle, pill, drop, tri, cloud, hex.
 Match the Grok Bot style, but never make an exact copy of a Grok Bot character.
 
