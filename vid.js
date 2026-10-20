@@ -4,7 +4,11 @@
 // The check uses the voice times if the voice exists. If not (for example in CI), it uses stand-in times.
 import fs from "node:fs";
 import vm from "node:vm";
+import os from "node:os";
+import path from "node:path";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 
 const VOICE = "af_heart", RATE = 24000, KEEP = 1200;   // KEEP: samples of silence to keep at each end of a sentence (50 ms)
 const DELAY = 1105;   // samples of silence that MP3 adds at the start (576 + 529). The file starts with less silence for them.
@@ -32,11 +36,28 @@ function load(name) {   // the scenes of a video. Each sentence has its voice fi
   });
 }
 
+// The voice packages and the voice model live in 1 folder for all copies of the project. The model downloads into its node_modules.
+const VOICE_HOME = path.join(os.homedir(), ".cache", "vid");
+function voiceInstall() {   // installs the voice packages (npm ci) if they are missing or if their lock file is not the project's
+  const lock = fs.readFileSync("package-lock.json", "utf8"), done = path.join(VOICE_HOME, "installed-lock.json");
+  if (!fs.existsSync(path.join(VOICE_HOME, "node_modules")) || !fs.existsSync(done) || fs.readFileSync(done, "utf8") !== lock) {
+    console.log(`Installing the voice packages in ${VOICE_HOME}`);
+    fs.mkdirSync(VOICE_HOME, { recursive: true });
+    fs.rmSync(done, { force: true });
+    fs.copyFileSync("package.json", path.join(VOICE_HOME, "package.json"));
+    fs.writeFileSync(path.join(VOICE_HOME, "package-lock.json"), lock);
+    execFileSync("npm", ["ci"], { cwd: VOICE_HOME, stdio: "inherit" });
+    fs.writeFileSync(done, lock);   // written last: a failed install is tried again
+  }
+}
+const fromVoice = (pkg, file) => import(pathToFileURL(path.join(VOICE_HOME, "node_modules", pkg, file)).href);
+
 let tts, Mp3Encoder;
 async function speak(text) {   // gives the mp3 bytes and the length in samples
   if (!tts) {
-    ({ Mp3Encoder } = await import("@breezystack/lamejs"));
-    const { KokoroTTS } = await import("kokoro-js");
+    voiceInstall();
+    ({ Mp3Encoder } = await fromVoice("@breezystack/lamejs", "dist/lamejs.js"));
+    const { KokoroTTS } = await fromVoice("kokoro-js", "dist/kokoro.js");
     tts = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", { dtype: "fp32", device: "cpu" });
   }
   const a = (await tts.generate(text, { voice: VOICE })).audio, loud = (v) => Math.abs(v) > 0.01;
