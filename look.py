@@ -1,4 +1,5 @@
 """One look for all videos. Change the look here, not in scenes.
+Style: dark stage, flat saturated blob characters with two pill eyes, soft light, a little gloss.
 Axes: X is right, Y is away from the camera, Z is up. All times are in seconds."""
 import math
 
@@ -6,15 +7,14 @@ import bpy
 
 import config
 
-OUTLINE = True                       # thin line around shapes
-KEY, FILL, RIM, AMBIENT = 3.0, 0.15, 2.0, 0.12  # light strengths. Tune with a still frame.
+KEY, AMBIENT = 1.0, 0.6      # light strengths. Tune with a still frame.
 PALETTE = {
-    "sky": "#0E1224", "floor": "#2A3566", "text": "#FFFFFF", "amber": "#FFB454",
-    "body": "#FF5E3A", "belly": "#FFE1C9", "ink": "#1A1B2E", "white": "#FFFFFF",
-    "skin": "#FFC39A", "silver": "#DDE3EA", "gold": "#FFC933", "blue": "#4D8DFF",
-    "brown": "#8A5224",
+    "sky": "#FFFFFF", "floor": "#141418",       # "sky" is the color of the ambient light, not of the picture
+    "text": "#FFFFFF", "amber": "#FFB000", "gold": "#FFC933",
+    "purple": "#9B5CFF", "teal": "#00B89C", "orange": "#FF6A00", "pink": "#FF2D8E",
+    "red": "#FF2D4B", "blue": "#1B7BFF", "white": "#F7F7F7", "ink": "#111114", "brown": "#8B5A2B",
 }
-ROUGH = {"floor": 0.95}              # roughness. Other colors use 0.45 (a little glossy).
+ROUGH = {"floor": 0.95}              # other colors use 0.35 (a little glossy)
 ZERO = (1e-4, 1e-4, 1e-4)
 
 
@@ -41,7 +41,7 @@ def mat(color):
         _set(m, "use_nodes", True)
         b = m.node_tree.nodes["Principled BSDF"]
         b.inputs["Base Color"].default_value = rgb(PALETTE[color])
-        b.inputs["Roughness"].default_value = ROUGH.get(color, 0.45)
+        b.inputs["Roughness"].default_value = ROUGH.get(color, 0.35)
     return m
 
 
@@ -64,12 +64,11 @@ def _world():
     bg.inputs["Strength"].default_value = AMBIENT
 
 
-def _sun(name, strength, rot_deg, angle_deg, shadow, color=(1.0, 1.0, 1.0)):
+def _sun(name, strength, rot_deg, angle_deg):
     d = bpy.data.lights.new(name, "SUN")
     d.energy = strength
-    d.color = color
     d.angle = math.radians(angle_deg)
-    _set(d, "use_shadow", shadow)
+    _set(d, "use_shadow", True)
     o = bpy.data.objects.new(name, d)
     o.rotation_euler = [math.radians(a) for a in rot_deg]
     bpy.context.scene.collection.objects.link(o)
@@ -93,18 +92,6 @@ def _camera(kind):
     sc.camera = cam
 
 
-def _outline(height):
-    sc, vl = bpy.context.scene, bpy.context.view_layer
-    sc.render.use_freestyle = True
-    vl.use_freestyle = True
-    fs = vl.freestyle_settings
-    ls = fs.linesets[0] if len(fs.linesets) else fs.linesets.new("outline")
-    if ls.linestyle is None:
-        ls.linestyle = bpy.data.linestyles.new("ink")
-    ls.linestyle.thickness = 1.6 * height / 1080
-    ls.linestyle.color = rgb(PALETTE["ink"])[:3]
-
-
 def reset(preview=False, camera="perspective", seconds=5.0):
     """Make a new empty scene with the standard look. camera = "perspective" or "ortho"."""
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -125,15 +112,8 @@ def reset(preview=False, camera="perspective", seconds=5.0):
     floor = bpy.context.object
     floor.name = "floor"
     floor.data.materials.append(mat("floor"))
-    _sun("key", KEY, (50, 0, -30), 8, True, (1.0, 0.95, 0.88))      # warm, from front left
-    _sun("fill", FILL, (70, 0, 40), 40, False)
-    _sun("rim", RIM, (-55, 0, -30), 15, False, (0.65, 0.78, 1.0))   # cool, from behind right
+    _sun("key", KEY, (50, 0, -30), 25)     # from front left, above
     _camera(camera)
-    if OUTLINE:
-        try:
-            _outline(h)
-        except Exception as e:  # the outline is not vital. The scene can render without it.
-            print("outline off:", e)
 
 
 # ---- shapes -------------------------------------------------------------
@@ -147,12 +127,28 @@ def ball(name, loc, scale, color):
     return o
 
 
-def disc(name, radius, color, loc, thick=0.07):
-    """A coin. It stands up and faces the camera."""
-    bpy.ops.mesh.primitive_cylinder_add(vertices=64, radius=radius, depth=thick,
-                                        location=loc, rotation=(math.pi / 2, 0, 0))
+def squircle(name, loc, scale, color):
+    """A rounded square (a cube with very round edges)."""
+    bpy.ops.mesh.primitive_cube_add(size=2, location=loc)
+    o = bpy.context.object
+    o.name, o.scale = name, scale
+    b = o.modifiers.new("round", "BEVEL")
+    b.width, b.segments, b.limit_method = 0.5, 10, "NONE"
+    bpy.ops.object.shade_smooth()
+    o.data.materials.append(mat(color))
+    return o
+
+
+def capsule(name, loc, radius, length, color, rot=(0, 0, 0)):
+    """A pill. It stands up and it is flat, like a sticker. Used for eyes."""
+    bpy.ops.mesh.primitive_cylinder_add(vertices=32, radius=radius, depth=length, location=loc, rotation=rot)
     o = bpy.context.object
     o.name = name
+    o.scale = (1, 0.3, 1)
+    b = o.modifiers.new("round", "BEVEL")
+    b.width, b.segments, b.limit_method = radius * 0.98, 8, "ANGLE"
+    b.angle_limit = math.radians(60)
+    bpy.ops.object.shade_smooth()
     o.data.materials.append(mat(color))
     return o
 

@@ -34,14 +34,21 @@ def build(beats):                 # beats[i] = (start, end) seconds of sentence 
     look.pop(m.root, 0.2)
     m.hop(beats[0][0])
 ```
-Tools: `look.ball / disc / label` make shapes. `look.pop / vanish / move / hop / spin / key` animate.
+Tools: `look.ball / squircle / capsule / label` make shapes. `look.pop / vanish / move / hop / spin / key` animate.
 Colors come from `look.PALETTE`. Use only these colors. Do not set lights or materials in a scene.
 Time order: write the animation for an object in time order (the code reads the last position).
-Frame: camera sees x from -5 to 5. Put the mascot at the left and the subject at the right.
+Frame: camera sees x from -5 to 5. Put the narrator at the left and the subject at the right.
+Speed: one 1080p frame must take about 1 s. A frame that takes much more is a bug: find the cause first.
 
 ## Look
-The look is code in `look.py`: one soft key light, one weak fill light, soft ground shadow, a thin outline,
-the standard colors. The mascot is code in `mascot.py`. It is an original character: round, simple eyes.
+Reference pictures are in `ref/`. Look at them before you change the look.
+The look is code in `look.py`: a near-black stage, one soft key light, a little gloss, flat saturated colors
+from `look.PALETTE`. No outline (it made each frame very slow).
+Characters are in `mascot.py`: a soft blob and two dark pill eyes. No arms, no mouth, no feet.
+- `mascot.Mascot(loc)` is the narrator (teal cloud).
+- `mascot.Islander(loc, eyes)` is a white blob. `eyes` is "blue" or "brown".
+- `mascot.Blob(loc, shape, color, size)` makes a new character. Shapes: ball, squircle, cloud.
+All of them are original. They only follow the same feeling as the reference.
 
 ## Rules for change
 - Delete before you add. Add a rule or a part only when a failed scene shows the need.
