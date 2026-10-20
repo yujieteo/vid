@@ -9,7 +9,7 @@ Each change goes to https://github.com/yujieteo/vid through a pull request. CI r
 - `player.js` and `player.css`: the page of a video. The Inter font is inside `player.css`.
 - `vid.js`: `node vid.js make` makes the voice and the page. `node vid.js check` checks all scenes.
 - Plain scripts only (no modules, no build step), so the page opens from file:// with a double-click.
-- Git does not track the voice (`videos/<name>/voice/`) or the page (`videos/<name>/index.html`). `make` writes them.
+- Git tracks the voice (`videos/<name>/voice/`) and the page (`videos/<name>/index.html`). `make` writes them: commit them with the video.
 
 ## Steps for one video
 1. Write `outline.md` (1 page). List the sources and the facts. Use only facts that you read in a source.
@@ -18,7 +18,7 @@ Each change goes to https://github.com/yujieteo/vid through a pull request. CI r
 3. Run `node vid.js check`. Fix each error.
 4. Run `node vid.js make`. It makes the voice only for new sentences.
 5. Open `videos/<name>/index.html` in Chrome. Look at a few frames of each scene and fix what is wrong.
-First time on a machine: `npm install` (only `make` needs it).
+First time on a machine: `npm install` (only `make` needs it, and only for a new sentence).
 
 ## Scene file
 ```js
