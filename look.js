@@ -6,11 +6,13 @@
 // s (size), sx, sz (squash and stretch), eye (eye height) and gaze (how much the eyes look around by themselves) multiply.
 
 // Catppuccin Mocha (https://catppuccin.com/palette). brown is not in Catppuccin: it is peach mixed with crust.
+// hotpink and white are not in Catppuccin: a bright, saturated body color and the eyes on it, as in Grok Bot.
 const PALETTE = {
   crust: "#11111b", mantle: "#181825", base: "#1e1e2e", surface0: "#313244", surface1: "#45475a", surface2: "#585b70",
   overlay0: "#6c7086", text: "#cdd6f4", rosewater: "#f5e0dc", flamingo: "#f2cdcd", pink: "#f5c2e7", mauve: "#cba6f7",
   red: "#f38ba8", maroon: "#eba0ac", peach: "#fab387", yellow: "#f9e2af", green: "#a6e3a1", teal: "#94e2d5",
   sky: "#89dceb", sapphire: "#74c7ec", blue: "#89b4fa", lavender: "#b4befe", brown: "#916a56",
+  hotpink: "#ff2e88", white: "#ffffff",
 };
 const LEAD = 0.5, GAP = 0.45, TAIL = 0.8;   // seconds of silence before, between and after sentences
 
@@ -43,29 +45,10 @@ function hash(seed, i) {   // a fixed number from 0 to 1 for each pair of intege
   h = Math.imul(h, 0xc2b2ae3d);
   return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
 }
-const mix = (a, b, k) => "#" + [1, 3, 5].map((i) =>
-  Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - k) + parseInt(b.slice(i, i + 2), 16) * k).toString(16).padStart(2, "0")).join("");
 
-// ---- the stage: a background in flat tones that moves slowly ------------------------------------
-
-const P = PALETTE;
-function stage(t) {   // a sky, 2 far hills, a round floor and dust. They move at different speeds, as with depth.
-  const cam = 0.4 * Math.sin(t / 6) + 0.12 * Math.sin(t / 2.3 + 1);   // the camera turns slowly around the middle
-  const dust = Array.from({ length: 22 }, (_, i) => {   // d: the depth, from far (0) to near (1)
-    const d = hash(91, i), u = (t * (0.012 + 0.02 * d) + hash(92, i)) % 1;
-    const x = -5.6 + 11.2 * hash(93, i) + (0.5 - d) * 1.6 * cam + 0.15 * Math.sin(t / 3 + 6 * hash(94, i));
-    return `<circle cx="${n(x)}" cy="${n(1.4 - 6 * u)}" r="${n(0.015 + 0.035 * d)}" fill="${P.lavender}" ` +
-      `opacity="${n(0.55 * (0.3 + d) * Math.sin(Math.PI * u))}"/>`;
-  }).join("");
-  return `<rect x="-5" y="-4.4" width="10" height="5.625" fill="${P.base}"/>` +
-    `<ellipse cx="${n(-3.2 + 0.9 * cam)}" cy="5.4" rx="6.5" ry="8.2" fill="${mix(P.base, P.surface0, 0.4)}"/>` +
-    `<ellipse cx="${n(2.4 + 0.6 * cam)}" cy="6.2" rx="8.5" ry="9.2" fill="${mix(P.base, P.surface0, 0.7)}"/>` +
-    `<ellipse cx="${n(0.25 * cam)}" cy="6.65" rx="13" ry="8.8" fill="${P.surface0}"/>` + dust;
-}
-
-// t is the time of the video, so that the background does not jump at a scene cut.
-const svg = (body, t = 0) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -4.4 10 5.625" font-family="Inter" font-weight="600">${DEFS}${stage(t)}${body}</svg>`;
+// The stage is 1 plain, flat, near-black color.
+const svg = (body) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -4.4 10 5.625" font-family="Inter" font-weight="600">` +
+  `${DEFS}<rect x="-5" y="-4.4" width="10" height="5.625" fill="${PALETTE.crust}"/>${body}</svg>`;
 
 // ---- motion: each function gives a pose for time t ---------------------------------------------
 
@@ -76,8 +59,10 @@ function ease(t, t0, t1) {   // 0 before t0, 1 after t1, smooth in and out
 }
 const bump = (t, t0, t1) => (t <= t0 || t >= t1 ? 0 : Math.sin((Math.PI * (t - t0)) / (t1 - t0)) ** 2);
 const hold = (t, t0, t1, r) => ease(t, t0, t0 + r) - ease(t, t1 - r, t1);   // go to 1 in r seconds, stay, go back to 0 at t1
-const shut = (t, t0) => ease(t, t0, t0 + 0.06) - ease(t, t0 + 0.09, t0 + 0.21);   // close fast, open a little slower
-const settle = (u) => (u <= 0 ? 0 : 1 - Math.exp(-28 * u) * (Math.cos(32 * u) + 0.875 * Math.sin(32 * u)));   // a quick move with a small overshoot
+// The blink and the turn of the head come from the Grok Bot reference animations (https://github.com/njpatel/omabot):
+// a blink closes in 0.13 s, stays closed 0.06 s and opens in 0.21 s, and the head turns on a spring that is almost critically damped.
+const shut = (t, t0) => ease(t, t0, t0 + 0.13) - ease(t, t0 + 0.19, t0 + 0.4);
+const settle = (u) => (u <= 0 ? 0 : 1 - Math.exp(-21.7 * u) * (Math.cos(7.9 * u) + 2.75 * Math.sin(7.9 * u)));   // a quick move that settles
 const stretch = (sz) => ({ sz, sx: 1 / Math.sqrt(sz) });   // keep the area the same
 
 function pop(t, t0) {   // grow from nothing with a spring: overshoot, stretch, then settle. Then the eyes open.
@@ -92,20 +77,21 @@ function out(t, t0, d = 0.3) {   // swell a little, then shrink to nothing
   return { s: k >= 1 ? 0 : (1 + 0.15 * Math.sin(Math.PI * k)) * (1 - k ** 3) };
 }
 
-function hop(t, t0, h = 0.5, d = 0.5) {   // crouch, jump on an arc with wide eyes, land with a squash and a squint
-  const z = (tt) => { const k = (tt - t0) / d; return k > 0 && k < 1 ? 4 * h * k * (1 - k) : 0; };
+function hop(t, t0, h = 0.5, d = 0.5) {   // crouch, jump on an arc with wide eyes, land with a squash, bounce once more, settle
+  const arc = (k, k0, k1, hh) => (k > k0 && k < k1 ? (4 * hh * (k - k0) * (k1 - k)) / (k1 - k0) ** 2 : 0);
+  const z = (tt) => { const k = (tt - t0) / d; return arc(k, 0, 1, h) + arc(k, 1.2, 1.6, 0.15 * h); };
   return {
     up: z(t), ez: 0.4 * (z(t - 0.06) - z(t)),   // the eyes follow a little late
-    eye: 1 + 0.18 * bump(t, t0, t0 + d) - 0.45 * bump(t, t0 + d - 0.02, t0 + d + 0.24),
-    ...stretch(1 - 0.16 * bump(t, t0 - 0.16, t0 + 0.04) + 0.14 * bump(t, t0, t0 + 0.5 * d)
-      - 0.2 * bump(t, t0 + d, t0 + d + 0.18) + 0.05 * bump(t, t0 + d + 0.14, t0 + d + 0.36)),
+    eye: 1 + 0.15 * bump(t, t0, t0 + d) - 0.4 * bump(t, t0 + d - 0.02, t0 + d + 0.2),
+    ...stretch(1 - 0.08 * bump(t, t0 - 0.16, t0 + 0.04) + 0.07 * bump(t, t0, t0 + 0.5 * d)
+      - 0.12 * bump(t, t0 + d, t0 + 1.2 * d) - 0.05 * bump(t, t0 + 1.6 * d, t0 + 1.6 * d + 0.16)),
   };
 }
 
 function squash(t, t0) {   // stretch up a little, press down with closed eyes, then spring back with an overshoot
   const press = bump(t, t0, t0 + 0.26);
-  return { eye: 1 - 0.7 * press, ...stretch(1 + 0.07 * bump(t, t0 - 0.22, t0) - 0.3 * press
-    + 0.13 * bump(t, t0 + 0.2, t0 + 0.46) - 0.04 * bump(t, t0 + 0.42, t0 + 0.62)) };
+  return { eye: 1 - 0.7 * press, ...stretch(1 + 0.04 * bump(t, t0 - 0.22, t0) - 0.12 * press
+    + 0.05 * bump(t, t0 + 0.2, t0 + 0.46) - 0.015 * bump(t, t0 + 0.42, t0 + 0.62)) };
 }
 
 const blink = (t, t0) => ({ eye: 1 - 0.92 * shut(t, t0) });
@@ -148,9 +134,9 @@ function gaze(t, seed) {   // where the eyes look: [x, z] from -1 to 1. A new pl
   const m = settle(t - k * len - 0.45 * len * hash(seed, 4 * k + 13)), a = to(k - 1), b = to(k);
   return [a[0] + (b[0] - a[0]) * m, a[1] + (b[1] - a[1]) * m];
 }
-function lids(t, seed) {   // a blink every 1.6 to 3.4 s (sometimes 2 blinks), and a squint now and then
-  const len = 1.6 + 1.8 * hash(seed, 5), k = Math.floor(t / len), t0 = k * len + 0.5 * len * hash(seed, 3 * k + 20);
-  const twice = hash(seed, 3 * k + 21) < 0.25 ? shut(t, t0 + 0.27) : 0;
+function lids(t, seed) {   // a blink every 2.8 to 7.4 s (sometimes 2 blinks), and a squint now and then
+  const len = 2.8 + 4.6 * hash(seed, 5), k = Math.floor(t / len), t0 = k * len + 0.5 * len * hash(seed, 3 * k + 20);
+  const twice = hash(seed, 3 * k + 21) < 0.25 ? shut(t, t0 + 0.45) : 0;
   const sl = 4.5 + 3 * hash(seed, 6), j = Math.floor(t / sl), s0 = j * sl + 0.4 * sl * hash(seed, 3 * j + 22);
   const narrow = hash(seed, 3 * j + 23) < 0.6 ? hold(t, s0, s0 + 1.1, 0.18) : 0;
   return (1 - 0.92 * Math.max(shut(t, t0), twice)) * (1 - 0.45 * narrow);
@@ -186,10 +172,11 @@ const around = (count, r, z, turn = 0) =>
   Array.from({ length: count }, (_, i) => { const a = turn + (2 * Math.PI * i) / count; return [r * Math.cos(a), z + r * Math.sin(a)]; });
 
 // The bodies. Size 1 is about 2 units high and 2 units wide. The feet are at (0, 0).
-// round: [middle height, half width, half height] of a ball with about the shape of the body. The eyes and the shading sit on it.
+// round: [middle height, half width, half height] of a ball with about the shape of the body. The eyes sit on it.
 // The face: high (the height of the eyes), gap (half the space between the eyes) and eye (the size of the eyes).
+// The ball has the Grok Bot proportions, measured in the reference pictures: the eye centres are 0.27 of the body width apart.
 const BODY = {
-  ball: { body: circles([[0, 1, 1]]), round: [1, 1, 1], high: 1.1, gap: 0.34, eye: 1 },
+  ball: { body: circles([[0, 1, 1]]), round: [1, 1, 1], high: 1.05, gap: 0.27, eye: 1 },
   egg: { body: `<ellipse cy="-1.06" rx="0.86" ry="1.06"/>`, round: [1.06, 0.86, 1.06], high: 1.2, gap: 0.3, eye: 0.95 },
   squircle: { body: `<rect x="-0.95" y="-1.9" width="1.9" height="1.9" rx="0.62"/>`, round: [0.95, 0.98, 0.95], high: 1.1, gap: 0.38, eye: 1 },
   pill: { body: `<rect x="-1.12" y="-1.46" width="2.24" height="1.46" rx="0.73"/>`, round: [0.73, 1.12, 0.73], high: 0.78, gap: 0.42, eye: 0.8 },
@@ -207,10 +194,11 @@ const BODY = {
 const DEFS = "<defs>" + Object.entries(BODY).map(([name, b]) => `<clipPath id="clip-${name}">${b.body}</clipPath>`).join("") + "</defs>";
 
 // An eye is a stroke around a spine: an arc of length len that bends by bend (1 / radius). w is the width,
-// taper makes the top end thinner, and turn (degrees) turns the eye. Below, each eye gets its outline and its catchlight
-// as lists of points [a, b] (to the right and up): sides[0] for the left eye, sides[1] for the right eye (a mirror image).
+// taper makes the top end thinner, and turn (degrees) turns the eye. Below, each eye gets its outline
+// as a list of points [a, b] (to the right and up): sides[0] for the left eye, sides[1] for the right eye (a mirror image).
+// pill is the Grok Bot eye, measured in the reference pictures: 0.115 of the body width wide and 0.25 long (with the ends).
 const EYE = {
-  pill: { w: 0.4, len: 0.42 }, tall: { w: 0.32, len: 0.62 }, dot: { w: 0.5, len: 0 }, wide: { w: 0.32, len: 0.38, turn: 90 },
+  pill: { w: 0.23, len: 0.27 }, tall: { w: 0.32, len: 0.62 }, dot: { w: 0.5, len: 0 }, wide: { w: 0.32, len: 0.38, turn: 90 },
   bean: { w: 0.4, len: 0.48, bend: 1.8 }, comma: { w: 0.46, len: 0.46, bend: 3, taper: 0.75 }, arc: { w: 0.15, len: 0.6, bend: 4.5, turn: 90 },
 };
 for (const e of Object.values(EYE)) {
@@ -229,31 +217,15 @@ for (const e of Object.values(EYE)) {
   });
   const outline = [...spine.map((q) => side(q, 1)), ...cap(spine.at(-1), 1),
     ...spine.toReversed().map((q) => side(q, -1)), ...cap(spine[0], -1)].map(turn);
-  const q = spine[taper ? 1 : spine.length - 2], [qa, qb] = turn(q.at), r = 0.38 * q.r;
-  e.sides = [1, -1].map((m) => ({ outline: outline.map(([a, b]) => [m * a, b]),
-    shine: w >= 0.3 && Array.from({ length: 10 }, (_, j) =>
-      [m * qa - 0.32 * q.r + r * Math.cos((j * Math.PI) / 5), qb + 0.2 * q.r + r * Math.sin((j * Math.PI) / 5)]) }));
+  e.sides = [1, -1].map((m) => outline.map(([a, b]) => [m * a, b]));
 }
 const smooth = (points) => {   // a closed smooth path through the middles of the sides of a polygon
   const mid = (p, q) => `${n((p[0] + q[0]) / 2)} ${n((p[1] + q[1]) / 2)}`;
   return `M${mid(points.at(-1), points[0])}` + points.map((p, i) => `Q${n(p[0])} ${n(p[1])} ${mid(p, points[(i + 1) % points.length])}`).join("") + "Z";
 };
 
-// The shadow side of a body: the part of its ball away from the light. The light comes from the top left and a little
-// from the front. The shadow side is painted on the ball, so it turns with the face (yaw to the right, pitch up, in radians).
-const LIGHT = [-0.5, 0.6, 0.7].map((v, i, l) => v / Math.hypot(...l));
-function shade(yaw, pitch, [cz, ax, az]) {
-  const y1 = LIGHT[1] * Math.cos(pitch) + LIGHT[2] * Math.sin(pitch), z1 = LIGHT[2] * Math.cos(pitch) - LIGHT[1] * Math.sin(pitch);
-  const lx = LIGHT[0] * Math.cos(yaw) + z1 * Math.sin(yaw), lz = z1 * Math.cos(yaw) - LIGHT[0] * Math.sin(yaw);
-  const d = [lx / Math.hypot(lx, y1), y1 / Math.hypot(lx, y1)], e = [-d[1], d[0]], m = [-lz * d[0], -lz * d[1]], K = 0.5523;
-  const at = (i, j, k) => `${n(ax * (i * e[0] + j * d[0] + k * m[0]))} ${n(-cz - az * (i * e[1] + j * d[1] + k * m[1]))}`;
-  // Across the ball, around a far box on the shadow side, then back along the edge of the light (half an ellipse).
-  return `M${at(1, 0, 0)}L${at(3, 0, 0)}L${at(3, -3, 0)}L${at(-3, -3, 0)}L${at(-3, 0, 0)}L${at(-1, 0, 0)}` +
-    `C${at(-1, 0, K)} ${at(-K, 0, 1)} ${at(0, 0, 1)}C${at(K, 0, 1)} ${at(1, 0, K)} ${at(1, 0, 0)}Z`;
-}
-
-// A bot: a flat blob with 2 big eyes. By itself it breathes, looks around, blinks and squints, at its own times,
-// and the body leans after the eyes. kind: shape, color, eyes (the eye color), eye (the eye shape),
+// A bot: a flat blob in 1 color with 2 flat eyes (no outline, no shading, no shadow). By itself it breathes, looks around,
+// blinks and squints, at its own times. The body stays upright: the eyes do the looking. kind: shape, color, eyes (the eye color), eye (the eye shape),
 // tilt (degrees, or [left, right]), gap, side and high (the place of the eyes; the shape gives gap and high), size.
 function blob(x, t, kind, ...poses) {
   const b = BODY[kind.shape], k = { eyes: "crust", eye: "pill", tilt: 0, gap: b.gap, high: b.high, side: 0, size: 1, ...kind };
@@ -261,37 +233,34 @@ function blob(x, t, kind, ...poses) {
   let seed = 7;
   for (let i = 0; i < name.length; i++) seed = Math.imul(seed ^ name.charCodeAt(i), 16777619);
   const breath = Math.sin(2 * Math.PI * (t / (2.4 + hash(seed, 1)) + hash(seed, 2)));
-  const [gx, gz] = gaze(t, seed), lean = gaze(t - 0.14, seed)[0];   // the body follows the eyes a little late
-  p.tilt += 6 * lean * p.gaze + 25 * p.ex;
+  const [gx, gz] = gaze(t, seed);
   p.ex += 0.22 * gx * p.gaze;
   p.ez += 0.14 * gz * p.gaze + 0.015 * breath;
-  p.sz *= 1 + 0.028 * breath;
-  p.sx *= 1 - 0.018 * breath;
+  p.sz *= 1 + 0.015 * breath;
+  p.sx *= 1 - 0.01 * breath;
   p.eye *= lids(t, seed);
   p.s *= k.size;
 
-  const s = p.s, X = x + p.dx, air = Math.min(1, p.up / 1.2), c = PALETTE[k.color];
-  const shadow = `<ellipse cx="${n(X)}" cy="${n(-p.z)}" rx="${n(1.05 * s * (1 - 0.4 * air))}" ry="${n(0.2 * s * (1 - 0.4 * air))}" ` +
-    `fill="${PALETTE.crust}" opacity="${n(0.5 * (1 - 0.6 * air))}"/>`;
   // The face turns on the ball: the eyes go around its curve, and the eye near the edge gets narrow and bends.
-  const [cz, ax, az] = b.round, gap = k.gap / ax, turn = 2.7 * p.ex, rise = 2.5 * p.ez;
+  // At most about 24 degrees to a side and 20 degrees up, as in the Grok Bot reference animations. The face also rolls
+  // to the side that it looks at (at most 25 degrees), so the eyes tilt as in the reference pictures.
+  const [cz, ax, az] = b.round, gap = k.gap / ax, turn = 1.9 * p.ex, rise = 2.5 * p.ez;
   const yaw = Math.max(gap - 1.12, Math.min(1.12 - gap, Math.asin(k.side / ax) + turn));
   const pitch = Math.max(-0.9, Math.min(0.9, Math.asin(Math.max(-1, Math.min(1, (k.high - cz) / az))) + rise));
-  const rim = k.eyes === "crust" || k.eyes === "text" ? "" : ` stroke="${PALETTE.crust}" stroke-width="0.06"`;
   const eye = (i) => {   // i = -1 (left) or 1 (right)
     const y = yaw + i * gap, cy = Math.cos(y), sy = Math.sin(y), cp = Math.cos(pitch), sp = Math.sin(pitch);
     const tilt = ([k.tilt].flat().at(i < 0 ? 0 : -1) * Math.PI) / 180, ct = Math.cos(tilt), st = Math.sin(tilt);
-    const size = b.eye, { outline, shine } = EYE[k.eye].sides[(i + 1) / 2];
+    const size = b.eye;
     const path = (points) => smooth(points.map(([a, h]) => {   // from the face to the ball: go a and h along the surface
       h *= p.eye;
       const u = (size * (a * ct + h * st)) / ax, v = (size * (h * ct - a * st)) / az, r = Math.hypot(u, v), f = r ? Math.sin(r) / r : 1;
       return [ax * (sy * cp * Math.cos(r) + f * (u * cy - v * sy * sp)), -cz - az * (sp * Math.cos(r) + f * v * cp)];
     }));
-    return `<path d="${path(outline)}" fill="${PALETTE[k.eyes]}"${rim}/>` +
-      (shine && k.eyes !== "text" ? `<path d="${path(shine)}" fill="${PALETTE.text}" opacity="0.85"/>` : "");
+    return `<path d="${path(EYE[k.eye].sides[(i + 1) / 2])}"/>`;
   };
-  return shadow + place(x, 0, p, `<g fill="${c}">${b.body}</g><g clip-path="url(#clip-${k.shape})">` +
-    `<path d="${shade(turn / 2, rise / 2, b.round)}" fill="${mix(c, PALETTE.crust, 0.32)}"/>${eye(-1)}${eye(1)}</g>`);
+  const roll = Math.max(-25, Math.min(25, -90 * p.ex)), mid = `${n(ax * Math.sin(yaw) * Math.cos(pitch))} ${n(-cz - az * Math.sin(pitch))}`;
+  return place(x, 0, p, `<g fill="${PALETTE[k.color]}">${b.body}</g>` +
+    `<g clip-path="url(#clip-${k.shape})" fill="${PALETTE[k.eyes]}"><g transform="rotate(${n(roll)} ${mid})">${eye(-1)}${eye(1)}</g></g>`);
 }
 
 // The bots. 0 is the narrator. Each one has its own shape, colors and eyes.

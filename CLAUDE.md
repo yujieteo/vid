@@ -39,12 +39,13 @@ scene([
 ## Look
 Reference pictures are in `ref/` on the local machine only. They are third-party art: never add them to Git.
 Look at them before you change the look.
-The look: a dark stage that moves slowly, pastel colors from `PALETTE` (Catppuccin Mocha) in 2 flat tones, the Inter SemiBold font.
+The look: Grok Bot. A plain near-black stage, each body in 1 flat color from `PALETTE` with flat eyes (no outline, no shading),
+the Grok Bot proportions (measured in `ref/`, written in `look.js`), the Inter SemiBold font.
 Characters are a soft blob with 2 big eyes. No arms, no mouth, no feet. They breathe, blink, squint and look around.
 - `mascot(x, t, ...)` is the narrator (teal cloud).
 - `islander(x, t, eyes, shape, ...)` is a white blob. `eyes` is "blue" or "brown".
 - `blob(x, t, kind, ...)` draws a character. `CAST` holds the bots. Shapes: ball, egg, squircle, pill, mochi, drop, tri, cloud, clover, hex.
-All of them are original. They only follow the same feeling as the reference.
+Match the Grok Bot style, but never make an exact copy of a Grok Bot character.
 
 ## Rules for change
 - Delete before you add. Add a rule or a part only when a failed scene shows the need.

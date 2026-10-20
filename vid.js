@@ -90,7 +90,7 @@ function check() {
     for (let k = 0; k <= Math.ceil(length * FPS); k++) {
       const t = k / FPS;
       let pic;
-      try { pic = svg(s.draw(t, at, beats), t); } catch (e) { fail(t, e.message); break; }
+      try { pic = svg(s.draw(t, at, beats)); } catch (e) { fail(t, e.message); break; }
       if (/NaN|undefined|Infinity/.test(pic)) { fail(t, "NaN or undefined in the SVG"); break; }
     }
     const voiced = s.voice.every((v) => v.file) ? "voice" : "stand-in times";

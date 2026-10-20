@@ -44,7 +44,7 @@ function video(voice) {   // voice[i][j] = [audio file, seconds] of sentence j i
       c.on = on;
     }
     t = Math.min(now(), total - 1e-6);
-    const s = scenes.findLast((s) => s.start <= t), pic = svg(s.draw(t - s.start, s.at, s.beats), t);
+    const s = scenes.findLast((s) => s.start <= t), pic = svg(s.draw(t - s.start, s.at, s.beats));
     if (pic !== last) $("pic").innerHTML = last = pic;
     $("seek").value = t;
     $("clock").textContent = `${mmss(t)} / ${mmss(total)}`;
