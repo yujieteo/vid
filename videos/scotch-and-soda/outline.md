@@ -1,4 +1,4 @@
-# Scotch and Soda (video 1, pipeline test)
+# Scotch and Soda
 
 Goal: a short explainer of what the audience sees in the coin trick "Scotch and Soda".
 
