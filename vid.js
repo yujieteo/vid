@@ -15,15 +15,15 @@ const DELAY = 1105;   // samples of silence that MP3 adds at the start (576 + 52
 const STAND_IN = 0.066;   // seconds for each character of a sentence, when the sentence has no voice yet
 const FPS = 60;
 
-const look = vm.createContext({});
-vm.runInContext(fs.readFileSync("look.js", "utf8"), look, { filename: "look.js" });
-const { timeline, cues, svg, said } = vm.runInContext("({ timeline, cues, svg, said })", look);
 const scenesOf = (name) => fs.readdirSync(`videos/${name}/scenes`).filter((f) => f.endsWith(".js")).sort();
 const videos = () => (fs.existsSync("videos") ? fs.readdirSync("videos") : []).filter((v) => fs.existsSync(`videos/${v}/scenes`) && scenesOf(v).length).sort();
 
-function load(name) {   // the scenes of a video. Each sentence has its voice file (if it exists) and its seconds.
+function load(name) {   // the scenes of a video, in a new context: no name of another video can collide. Each sentence has its voice file (if it exists) and its seconds.
+  const look = vm.createContext({});
+  vm.runInContext(fs.readFileSync("look.js", "utf8"), look, { filename: "look.js" });
+  const { timeline, cues, svg, said } = vm.runInContext("({ timeline, cues, svg, said })", look);
   const dir = `videos/${name}`, have = fs.existsSync(`${dir}/voice`) ? fs.readdirSync(`${dir}/voice`) : [];
-  return scenesOf(name).map((file) => {
+  const scenes = scenesOf(name).map((file) => {
     let got;
     look.scene = (narration, draw) => (got = { file, narration, draw });
     vm.runInContext(fs.readFileSync(`${dir}/scenes/${file}`, "utf8"), look, { filename: `${dir}/scenes/${file}` });
@@ -34,6 +34,7 @@ function load(name) {   // the scenes of a video. Each sentence has its voice fi
     });
     return got;
   });
+  return { scenes, timeline, cues, svg };
 }
 
 // The voice packages and the voice model live in 1 folder for all copies of the project. The model downloads into its node_modules.
@@ -71,7 +72,7 @@ async function speak(text) {   // gives the mp3 bytes and the length in samples
 
 async function make() {
   for (const name of videos()) {
-    const dir = `videos/${name}`, scenes = load(name), made = new Map();
+    const dir = `videos/${name}`, { scenes } = load(name), made = new Map();
     fs.mkdirSync(`${dir}/voice`, { recursive: true });
     for (const v of scenes.flatMap((s) => s.voice)) {
       if (!v.file && !made.has(v.id)) {
@@ -104,18 +105,25 @@ ${scenes.map((s) => `<script src="scenes/${s.file}"></script>`).join("\n")}
 
 function check() {
   let problems = 0;
-  for (const name of videos()) for (const s of load(name)) {
-    const where = `videos/${name}/scenes/${s.file}`, fail = (t, why) => (problems++, console.log(`${where} at ${t.toFixed(3)} s: ${why}`));
-    const { beats, length } = timeline(s.narration, s.voice.map((v) => v.seconds));
-    const at = cues(beats, s.narration);
-    for (let k = 0; k <= Math.ceil(length * FPS); k++) {
-      const t = k / FPS;
-      let pic;
-      try { pic = svg(s.draw(t, at, beats)); } catch (e) { fail(t, e.message); break; }
-      if (/NaN|undefined|Infinity/.test(pic)) { fail(t, "NaN or undefined in the SVG"); break; }
+  for (const name of videos()) {
+    const { scenes, timeline, cues, svg } = load(name);
+    let total = 0;
+    for (const s of scenes) {
+      const where = `videos/${name}/scenes/${s.file}`, fail = (t, why) => (problems++, console.log(`${where} at ${t.toFixed(3)} s: ${why}`));
+      const { beats, length } = timeline(s.narration, s.voice.map((v) => v.seconds));
+      const at = cues(beats, s.narration);
+      for (let k = 0; k <= Math.ceil(length * FPS); k++) {
+        const t = k / FPS;
+        let pic;
+        try { pic = svg(s.draw(t, at, beats)); } catch (e) { fail(t, e.message); break; }
+        if (/NaN|undefined|Infinity/.test(pic)) { fail(t, "NaN or undefined in the SVG"); break; }
+      }
+      const voiced = s.voice.every((v) => v.file) ? "voice" : "stand-in times";
+      console.log(`${where}: ${length.toFixed(1)} s (${voiced})`);
+      total += length;
     }
-    const voiced = s.voice.every((v) => v.file) ? "voice" : "stand-in times";
-    console.log(`${where}: ${length.toFixed(1)} s (${voiced})`);
+    const sec = Math.round(total), standIn = scenes.some((s) => !s.voice.every((v) => v.file));
+    console.log(`videos/${name}: ${Math.floor(sec / 60)} min ${sec % 60} s in all${standIn ? " (some stand-in times)" : ""}`);
   }
   console.log(problems ? `${problems} problems` : "check OK");
   process.exitCode = problems ? 1 : 0;
