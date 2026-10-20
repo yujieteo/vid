@@ -32,7 +32,7 @@ class Blob:
         else:
             add(look.ball("body", (0, 0, 1), (1, 0.85, 1), color))
             front = 0.78
-        self.eyes = [add(look.capsule("eye", (sx * 0.3, -front, 1.15), 0.1, 0.45, eye_color, rot=(0, tilt, 0)))
+        self.eyes = [add(look.capsule("eye", (sx * 0.3, -front - 0.09, 1.15), 0.14, 0.58, eye_color, rot=(0, tilt, 0)))
                      for sx in (-1, 1)]
         self.root.location = loc
         self.root.scale = (size, size, size)

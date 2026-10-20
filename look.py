@@ -2,6 +2,7 @@
 Style: dark stage, flat saturated blob characters with two pill eyes, soft light, a little gloss.
 Axes: X is right, Y is away from the camera, Z is up. All times are in seconds."""
 import math
+from pathlib import Path
 
 import bpy
 
@@ -9,13 +10,14 @@ import config
 
 KEY, AMBIENT = 1.0, 0.6      # light strengths. Tune with a still frame.
 PALETTE = {
-    "sky": "#FFFFFF", "floor": "#141418",       # "sky" is the color of the ambient light, not of the picture
+    "sky": "#FFFFFF", "floor": "#07070A",       # "sky" is the color of the ambient light, not of the picture
     "text": "#FFFFFF", "amber": "#FFB000", "gold": "#FFC933",
     "purple": "#9B5CFF", "teal": "#00B89C", "orange": "#FF6A00", "pink": "#FF2D8E",
     "red": "#FF2D4B", "blue": "#1B7BFF", "white": "#F7F7F7", "ink": "#111114", "brown": "#8B5A2B",
 }
 ROUGH = {"floor": 0.95}              # other colors use 0.35 (a little glossy)
 ZERO = (1e-4, 1e-4, 1e-4)
+FONT = Path(__file__).resolve().parent / "fonts" / "Inter-SemiBold.ttf"   # Inter. License: fonts/LICENSE.txt
 
 
 def rgb(hex_color):
@@ -158,6 +160,7 @@ def label(text, loc, size=0.5, color="text"):
     o = bpy.context.object
     o.data.body, o.data.size, o.data.extrude = text, size, 0.02
     o.data.align_x, o.data.align_y = "CENTER", "CENTER"
+    o.data.font = bpy.data.fonts.load(str(FONT), check_existing=True)
     o.data.materials.append(mat(color))
     return o
 
