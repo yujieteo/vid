@@ -30,7 +30,7 @@ scene([
   label("Title", 1.5, 2.3, 0.75, "blue", pop(t, at(1))));
 ```
 - Shapes: `label`, `blob`, `mascot`. Motion: `pop`, `out`, `hop`, `squash`, `blink`, `squint`,
-  `look`, `follow`, `glance`, `wave`. A shape takes any number of motions. Each motion is a function of t.
+  `look`, `follow`, `glance`, `wave`, `spin`. A shape takes any number of motions. Each motion is a function of t.
 - Colors come from `PALETTE`. Use only these colors.
 - Frame: x from -5 to 5, z from -1.2 to 4.4 (up). The narrator is at x = -3.6. The subject is at the right.
 - All scene files share 1 global scope: put constants inside the draw function.
