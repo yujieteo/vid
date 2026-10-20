@@ -15,7 +15,7 @@ Each change goes to https://github.com/yujieteo/vid through a pull request. CI r
 1. Write `outline.md` (1 page). List the sources and the facts. Use only facts that you read in a source.
    Never guess a fact. If a fact is missing, write that in the outline and leave it out of the video.
 2. Write the scene files: `videos/<name>/scenes/01-name.js`, `02-name.js`, ...
-3. Run `node vid.js check`. Fix each error and each jump.
+3. Run `node vid.js check`. Fix each error.
 4. Run `node vid.js make`. It makes the voice only for new sentences.
 5. Open `videos/<name>/index.html` in Chrome. Look at a few frames of each scene and fix what is wrong.
 First time on a machine: `npm install` (only `make` needs it).
@@ -29,22 +29,21 @@ scene([
   mascot(-3.6, t, pop(t, 0.1), hop(t, at(0, "one"))) +   // b[i] = [start, end] of sentence i
   label("Title", 1.5, 2.3, 0.75, "blue", pop(t, at(1))));
 ```
-- Shapes: `ball`, `label`, `blob`, `mascot`, `islander`. Motion: `pop`, `out`, `hop`, `blink`, `glance`, `wave`,
-  `walk`, `leave`, `glide`, `flip`. A shape takes any number of motions. Each motion is a function of t.
-- A shape comes in with `pop` and goes with `out` or `leave`. The check fails if a shape jumps between 2 frames.
+- Shapes: `ball`, `label`, `blob`, `mascot`, `islander`. Motion: `pop`, `out`, `hop`, `squash`, `blink`, `squint`,
+  `look`, `follow`, `glance`, `wave`, `walk`, `leave`. A shape takes any number of motions. Each motion is a function of t.
 - Colors come from `PALETTE`. Use only these colors.
 - Frame: x from -5 to 5, z from -1.2 to 4.4 (up). The narrator is at x = -3.6. The subject is at the right.
 - All scene files share 1 global scope: put constants inside the draw function.
-- Keep the SVG ready for export: only shapes, paths and text in Inter. No CSS animation, no HTML in the SVG.
+- Keep the SVG ready for export: only shapes, paths, gradients, filters and text in Inter. No CSS animation, no HTML in the SVG.
 
 ## Look
 Reference pictures are in `ref/` on the local machine only. They are third-party art: never add them to Git.
 Look at them before you change the look.
-The look: a near-black stage, flat saturated colors from `PALETTE`, the Inter SemiBold font.
-Characters are a soft blob with 2 dark pill eyes. No arms, no mouth, no feet. They breathe and blink.
+The look: a dark stage that moves slowly, pastel colors from `PALETTE` (Catppuccin Mocha) with soft shading, the Inter SemiBold font.
+Characters are a soft blob with 2 big eyes. No arms, no mouth, no feet. They breathe, blink, squint and look around.
 - `mascot(x, t, ...)` is the narrator (teal cloud).
 - `islander(x, t, eyes, shape, ...)` is a white blob. `eyes` is "blue" or "brown".
-- `blob(x, t, shape, color, size, eyes, ...)` makes a new character. Shapes: ball, squircle, cloud.
+- `blob(x, t, kind, ...)` draws a character. `CAST` holds the bots. Shapes: ball, egg, squircle, pill, mochi, drop, tri, cloud, clover, hex.
 All of them are original. They only follow the same feeling as the reference.
 
 ## Rules for change
