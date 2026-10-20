@@ -5,14 +5,12 @@
 // dx, z, up (height above the ground), tilt (degrees), ex and ez (eye move) add.
 // s (size), sx, sz (squash and stretch), eye (eye height) and gaze (how much the eyes look around by themselves) multiply.
 
-// Catppuccin Mocha (https://catppuccin.com/palette). brown is not in Catppuccin: it is peach mixed with crust.
-// hotpink and white are not in Catppuccin: a bright, saturated body color and the eyes on it, as in Grok Bot.
+// The stage (crust) and the text come from Catppuccin Mocha (https://catppuccin.com/palette).
+// The bots: 1 bright, saturated color each, with white or crust eyes, as in Grok Bot. Glasses are crust.
 const PALETTE = {
-  crust: "#11111b", mantle: "#181825", base: "#1e1e2e", surface0: "#313244", surface1: "#45475a", surface2: "#585b70",
-  overlay0: "#6c7086", text: "#cdd6f4", rosewater: "#f5e0dc", flamingo: "#f2cdcd", pink: "#f5c2e7", mauve: "#cba6f7",
-  red: "#f38ba8", maroon: "#eba0ac", peach: "#fab387", yellow: "#f9e2af", green: "#a6e3a1", teal: "#94e2d5",
-  sky: "#89dceb", sapphire: "#74c7ec", blue: "#89b4fa", lavender: "#b4befe", brown: "#916a56",
-  hotpink: "#ff2e88", white: "#ffffff",
+  crust: "#11111b", text: "#cdd6f4", white: "#ffffff",
+  hotpink: "#ff2e88", red: "#ff3b3b", orange: "#ff7a1a", yellow: "#ffd60a",
+  lime: "#8ee000", sky: "#2ec5ff", blue: "#3d6bff", violet: "#9d4dff",
 };
 const LEAD = 0.5, GAP = 0.45, TAIL = 0.8;   // seconds of silence before, between and after sentences
 
@@ -116,17 +114,6 @@ const wave = (t, t0, d = 1.6, deg = 12) => {   // rock from side to side
   return { tilt: deg * Math.sin(4 * Math.PI * k) * Math.sin(Math.PI * k) };
 };
 
-function walk(t, t0, t1, dx) {   // go dx to the side with small steps, and lean into the walk
-  const e = ease(t, t0, t1), steps = Math.max(2, Math.round(Math.abs(dx) / 0.7));
-  return { dx: dx * e, up: 0.12 * Math.abs(Math.sin(Math.PI * steps * e)), tilt: 8 * Math.sign(dx) * Math.sin(Math.PI * e) };
-}
-
-const leave = (t, t0) => [   // hop, step back behind the row, then walk out to the right
-  hop(t, t0, 0.35, 0.45),
-  { z: 0.45 * ease(t, t0 + 0.45, t0 + 0.8), s: 1 - 0.12 * ease(t, t0 + 0.45, t0 + 0.8) },
-  walk(t, t0 + 0.8, t0 + 2.8, 9),
-];
-
 // What a bot does by itself, at its own times. seed makes each bot different.
 function gaze(t, seed) {   // where the eyes look: [x, z] from -1 to 1. A new place every 1 to 2.2 s.
   const len = 1 + 1.2 * hash(seed, 3), k = Math.floor(t / len);
@@ -153,9 +140,6 @@ function merge(poses) {
 const place = (x, z, p, body) =>
   `<g transform="translate(${n(x + p.dx)} ${n(-z - p.z - p.up)}) rotate(${n(p.tilt)}) scale(${n(p.s * p.sx)} ${n(p.s * p.sz)})">${body}</g>`;
 
-const ball = (x, z, rx, rz, color, ...poses) =>
-  place(x, z, merge(poses), `<ellipse rx="${rx}" ry="${rz}" fill="${PALETTE[color]}"/>`);
-
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 const label = (text, x, z, size, color = "text", ...poses) => place(x, z, merge(poses),
   `<text font-size="${size}" fill="${PALETTE[color]}" text-anchor="middle" dominant-baseline="central">${esc(text)}</text>`);
@@ -170,65 +154,75 @@ function rounded(points, k) {   // a polygon with round corners. points: [x, z].
 }
 const around = (count, r, z, turn = 0) =>
   Array.from({ length: count }, (_, i) => { const a = turn + (2 * Math.PI * i) / count; return [r * Math.cos(a), z + r * Math.sin(a)]; });
+const smooth = (points) => {   // a closed smooth path through the middles of the sides of a polygon
+  const mid = (p, q) => `${n((p[0] + q[0]) / 2)} ${n((p[1] + q[1]) / 2)}`;
+  return `M${mid(points.at(-1), points[0])}` + points.map((p, i) => `Q${n(p[0])} ${n(p[1])} ${mid(p, points[(i + 1) % points.length])}`).join("") + "Z";
+};
+function curve(f, count = 72) {   // a smooth closed body through count points of f(angle) = [x, z]. The lowest point goes to z = 0.
+  const points = Array.from({ length: count }, (_, i) => f((2 * Math.PI * i) / count)), low = Math.min(...points.map((q) => q[1]));
+  return `<path d="${smooth(points.map(([x, z]) => [x, low - z]))}"/>`;
+}
+const power = (v, e) => Math.sign(v) * Math.abs(v) ** e;
+function drop(r, tip, half) {   // a ball of radius r on the ground, drawn up to a round point (radius tip, half angle half)
+  const s = Math.sin(half), c = Math.cos(half), top = r + r / s - tip / s;   // top: the height of the centre of the point
+  const at = (x, rr, z) => `${n(x * rr * c)} ${n(-z - rr * s)}`;   // where a side touches the circle of radius rr at height z
+  return `<path d="M${at(-1, tip, top)}A${tip} ${tip} 0 0 1 ${at(1, tip, top)}L${at(1, r, r)}A${r} ${r} 0 1 1 ${at(-1, r, r)}Z"/>`;
+}
 
-// The bodies. Size 1 is about 2 units high and 2 units wide. The feet are at (0, 0).
+// The bodies are the 8 shapes of the Grok Bot avatar system (https://x.ai/news/designing-grok-bot), measured there and drawn again.
+// Size 1 is 2 units wide (the ball is 2 units high). The feet are at (0, 0).
 // round: [middle height, half width, half height] of a ball with about the shape of the body. The eyes sit on it.
 // The face: high (the height of the eyes), gap (half the space between the eyes) and eye (the size of the eyes).
 // The ball has the Grok Bot proportions, measured in the reference pictures: the eye centres are 0.27 of the body width apart.
 const BODY = {
   ball: { body: circles([[0, 1, 1]]), round: [1, 1, 1], high: 1.05, gap: 0.27, eye: 1 },
-  egg: { body: `<ellipse cy="-1.06" rx="0.86" ry="1.06"/>`, round: [1.06, 0.86, 1.06], high: 1.2, gap: 0.3, eye: 0.95 },
-  squircle: { body: `<rect x="-0.95" y="-1.9" width="1.9" height="1.9" rx="0.62"/>`, round: [0.95, 0.98, 0.95], high: 1.1, gap: 0.38, eye: 1 },
-  pill: { body: `<rect x="-1.12" y="-1.46" width="2.24" height="1.46" rx="0.73"/>`, round: [0.73, 1.12, 0.73], high: 0.78, gap: 0.42, eye: 0.8 },
-  mochi: { body: `<path d="M-0.88 0Q-1.04 0 -1.03 -0.25C-1 -1.2 -0.58 -1.78 0 -1.78C0.58 -1.78 1 -1.2 1.03 -0.25Q1.04 0 0.88 0Z"/>`,
-    round: [0.78, 1, 1], high: 0.92, gap: 0.36, eye: 0.95 },
-  drop: { body: `<path d="M0.12 -2.08C0.42 -1.75 0.92 -1.35 0.92 -0.92A0.92 0.92 0 0 1 -0.92 -0.92C-0.92 -1.45 -0.28 -1.82 0.02 -2.06Q0.07 -2.12 0.12 -2.08Z"/>`,
-    round: [0.92, 0.92, 0.92], high: 0.88, gap: 0.3, eye: 0.9 },
-  tri: { body: rounded([[0, 2.05], [1.15, 0], [-1.15, 0]], 0.3), round: [0.66, 0.8, 0.66], high: 0.72, gap: 0.26, eye: 0.75 },
-  cloud: { body: circles([[-0.6, 0.85, 0.7], [0.6, 0.85, 0.7], [-0.35, 1.45, 0.65], [0.4, 1.45, 0.65], [0, 1.1, 0.85]]),
-    round: [1.12, 1.15, 0.95], high: 1.12, gap: 0.36, eye: 1 },
-  clover: { body: circles([[0, 0.95, 0.6], ...around(5, 0.52, 0.95, Math.PI / 2).map(([x, z]) => [n(x), n(z), 0.5])]),
-    round: [0.95, 0.95, 0.95], high: 1, gap: 0.3, eye: 0.85 },
-  hex: { body: rounded(around(6, 1.12, 0.98), 0.22), round: [0.98, 1.02, 0.92], high: 1, gap: 0.34, eye: 0.95 },
+  pebble: { body: curve((a) => {   // an ellipse that leans 11 degrees to the right, with 3 soft bumps
+    const r = (1.004 * 0.9) / Math.hypot(0.9 * Math.cos(a), 1.004 * Math.sin(a)) * (1 + 0.029 * Math.cos(3 * (a - 1.38)));
+    return [r * Math.cos(a - 0.19), r * Math.sin(a - 0.19)];
+  }), round: [0.91, 1, 0.9], high: 1, gap: 0.27, eye: 1 },
+  squircle: { body: curve((a) => [power(Math.cos(a), 0.63), power(Math.sin(a), 0.63)]), round: [1, 1, 1], high: 1.05, gap: 0.27, eye: 1 },
+  pill: { body: `<rect x="-1" y="-1.3" width="2" height="1.3" rx="0.65"/>`, round: [0.65, 1, 0.65], high: 0.72, gap: 0.27, eye: 0.9 },
+  drop: { body: drop(0.8, 0.12, 0.68), round: [0.8, 0.8, 0.8], high: 0.85, gap: 0.24, eye: 0.9 },
+  tri: { body: rounded([[0, 2.1], [1.21, 0], [-1.21, 0]], 0.27), round: [0.7, 0.85, 0.7], high: 0.75, gap: 0.22, eye: 0.8 },
+  cloud: { body: circles([[0.54, 0.59, 0.455], [-0.02, 0.525, 0.525], [-0.53, 0.59, 0.47], [-0.18, 1.06, 0.545], [0.37, 1.06, 0.435]]),
+    round: [0.85, 1, 0.8], high: 0.9, gap: 0.27, eye: 1 },
+  hex: { body: rounded(around(6, 1.045, 1, Math.PI / 2), 0.2), round: [1, 0.95, 1], high: 1, gap: 0.27, eye: 1 },
 };
 const DEFS = "<defs>" + Object.entries(BODY).map(([name, b]) => `<clipPath id="clip-${name}">${b.body}</clipPath>`).join("") + "</defs>";
 
 // An eye is a stroke around a spine: an arc of length len that bends by bend (1 / radius). w is the width,
-// taper makes the top end thinner, and turn (degrees) turns the eye. Below, each eye gets its outline
-// as a list of points [a, b] (to the right and up): sides[0] for the left eye, sides[1] for the right eye (a mirror image).
+// and turn (degrees) turns the eye. Below, each eye gets its outline as a list of points [a, b] (to the right and up):
+// sides[0] for the left eye, sides[1] for the right eye (a mirror image).
 // pill is the Grok Bot eye, measured in the reference pictures: 0.115 of the body width wide and 0.25 long (with the ends).
 const EYE = {
-  pill: { w: 0.23, len: 0.27 }, tall: { w: 0.32, len: 0.62 }, dot: { w: 0.5, len: 0 }, wide: { w: 0.32, len: 0.38, turn: 90 },
-  bean: { w: 0.4, len: 0.48, bend: 1.8 }, comma: { w: 0.46, len: 0.46, bend: 3, taper: 0.75 }, arc: { w: 0.15, len: 0.6, bend: 4.5, turn: 90 },
+  pill: { w: 0.23, len: 0.27 }, dot: { w: 0.3, len: 0 }, dash: { w: 0.2, len: 0.17, turn: 90 }, arc: { w: 0.12, len: 0.3, bend: 7, turn: 90 },
 };
 for (const e of Object.values(EYE)) {
-  const { w, len, bend = 0, taper = 0 } = e, mid = bend ? (1 - Math.cos((len * bend) / 2)) / (2 * bend) : 0;
+  const { w, len, bend = 0 } = e, mid = bend ? (1 - Math.cos((len * bend) / 2)) / (2 * bend) : 0;
   const c = Math.cos(((e.turn ?? 0) * Math.PI) / 180), s = Math.sin(((e.turn ?? 0) * Math.PI) / 180);
   const turn = ([a, b]) => [a * c + b * s, b * c - a * s];
   const spine = Array.from({ length: len ? 7 : 2 }, (_, i) => {
     const u = len ? i / 3 - 1 : 2 * i - 1, g = (u * len * bend) / 2;   // g: the angle of the spine at this point
-    return { at: bend ? [(1 - Math.cos(g)) / bend - mid, Math.sin(g) / bend] : [0, (u * len) / 2],
-      r: (w / 2) * (1 - (taper * (u + 1)) / 2), nx: Math.cos(g), nz: -Math.sin(g) };   // r: half the width. n: to the right
+    return { at: bend ? [(1 - Math.cos(g)) / bend - mid, Math.sin(g) / bend] : [0, (u * len) / 2], nx: Math.cos(g), nz: -Math.sin(g) };
   });
-  const side = (q, k) => [q.at[0] + k * q.r * q.nx, q.at[1] + k * q.r * q.nz];
+  const r = w / 2, side = (q, k) => [q.at[0] + k * r * q.nx, q.at[1] + k * r * q.nz];
   const cap = (q, k) => [1, 2, 3, 4, 5].map((j) => {   // a round end: k = 1 at the top, -1 at the bottom
     const cj = Math.cos((j * Math.PI) / 6), sj = Math.sin((j * Math.PI) / 6);
-    return [q.at[0] + k * q.r * (q.nx * cj - q.nz * sj), q.at[1] + k * q.r * (q.nz * cj + q.nx * sj)];
+    return [q.at[0] + k * r * (q.nx * cj - q.nz * sj), q.at[1] + k * r * (q.nz * cj + q.nx * sj)];
   });
   const outline = [...spine.map((q) => side(q, 1)), ...cap(spine.at(-1), 1),
     ...spine.toReversed().map((q) => side(q, -1)), ...cap(spine[0], -1)].map(turn);
   e.sides = [1, -1].map((m) => outline.map(([a, b]) => [m * a, b]));
 }
-const smooth = (points) => {   // a closed smooth path through the middles of the sides of a polygon
-  const mid = (p, q) => `${n((p[0] + q[0]) / 2)} ${n((p[1] + q[1]) / 2)}`;
-  return `M${mid(points.at(-1), points[0])}` + points.map((p, i) => `Q${n(p[0])} ${n(p[1])} ${mid(p, points[(i + 1) % points.length])}`).join("") + "Z";
-};
+// Glasses: 2 round rims with a bridge, or sunglasses: 2 dark lenses (soft squares) with a bridge. They sit on the face and turn with it.
+const lens = (rx, rz, e = 2) => Array.from({ length: 28 }, (_, i) => { const a = (2 * Math.PI * i) / 28; return [rx * power(Math.cos(a), 2 / e), rz * power(Math.sin(a), 2 / e)]; });
+const GLASSES = { clear: { rims: [lens(0.3, 0.3), lens(0.235, 0.235)] }, dark: { rims: [lens(0.29, 0.25, 3.2)] } };
 
-// A bot: a flat blob in 1 color with 2 flat eyes (no outline, no shading, no shadow). By itself it breathes, looks around,
+// A bot: a flat body in 1 color with 2 flat eyes (no outline, no shading, no shadow). By itself it breathes, looks around,
 // blinks and squints, at its own times. The body stays upright: the eyes do the looking. kind: shape, color, eyes (the eye color), eye (the eye shape),
-// tilt (degrees, or [left, right]), gap, side and high (the place of the eyes; the shape gives gap and high), size.
+// glasses ("clear" or "dark"), tilt (degrees, or [left, right]), gap, side and high (the place of the eyes; the shape gives gap and high), size.
 function blob(x, t, kind, ...poses) {
-  const b = BODY[kind.shape], k = { eyes: "crust", eye: "pill", tilt: 0, gap: b.gap, high: b.high, side: 0, size: 1, ...kind };
+  const b = BODY[kind.shape], k = { eyes: "white", eye: "pill", tilt: 0, gap: b.gap, high: b.high, side: 0, size: 1, ...kind };
   const p = merge(poses), name = `${x} ${k.shape} ${k.color}`;
   let seed = 7;
   for (let i = 0; i < name.length; i++) seed = Math.imul(seed ^ name.charCodeAt(i), 16777619);
@@ -247,44 +241,37 @@ function blob(x, t, kind, ...poses) {
   const [cz, ax, az] = b.round, gap = k.gap / ax, turn = 1.9 * p.ex, rise = 2.5 * p.ez;
   const yaw = Math.max(gap - 1.12, Math.min(1.12 - gap, Math.asin(k.side / ax) + turn));
   const pitch = Math.max(-0.9, Math.min(0.9, Math.asin(Math.max(-1, Math.min(1, (k.high - cz) / az))) + rise));
-  const eye = (i) => {   // i = -1 (left) or 1 (right)
-    const y = yaw + i * gap, cy = Math.cos(y), sy = Math.sin(y), cp = Math.cos(pitch), sp = Math.sin(pitch);
-    const tilt = ([k.tilt].flat().at(i < 0 ? 0 : -1) * Math.PI) / 180, ct = Math.cos(tilt), st = Math.sin(tilt);
-    const size = b.eye;
-    const path = (points) => smooth(points.map(([a, h]) => {   // from the face to the ball: go a and h along the surface
-      h *= p.eye;
-      const u = (size * (a * ct + h * st)) / ax, v = (size * (h * ct - a * st)) / az, r = Math.hypot(u, v), f = r ? Math.sin(r) / r : 1;
+  const face = (i, points, tilt = 0) => {   // from the face to the ball: go a and h along the surface from the place of eye i (-1, 0 or 1)
+    const y = yaw + i * gap, cy = Math.cos(y), sy = Math.sin(y), cp = Math.cos(pitch), sp = Math.sin(pitch), ct = Math.cos(tilt), st = Math.sin(tilt);
+    return smooth(points.map(([a, h]) => {
+      const u = (b.eye * (a * ct + h * st)) / ax, v = (b.eye * (h * ct - a * st)) / az, r = Math.hypot(u, v), f = r ? Math.sin(r) / r : 1;
       return [ax * (sy * cp * Math.cos(r) + f * (u * cy - v * sy * sp)), -cz - az * (sp * Math.cos(r) + f * v * cp)];
     }));
-    return `<path d="${path(EYE[k.eye].sides[(i + 1) / 2])}"/>`;
   };
+  const eye = (i) => `<path d="${face(i, EYE[k.eye].sides[(i + 1) / 2].map(([a, h]) => [a, h * p.eye]), ([k.tilt].flat().at(i < 0 ? 0 : -1) * Math.PI) / 180)}"/>`;
+  let specs = "";
+  if (k.glasses) {
+    const rims = GLASSES[k.glasses].rims, w = k.gap / b.eye - rims[0][0][0] + 0.03;   // w: half the length of the bridge
+    specs = `<g fill="${PALETTE.crust}"><path fill-rule="evenodd" d="${[-1, 1].map((i) => rims.map((q) => face(i, q)).join("")).join("")}"/>` +
+      `<path d="${face(0, [[-w, 0.06], [0, 0.07], [w, 0.06], [w, 0.12], [0, 0.13], [-w, 0.12]])}"/></g>`;
+  }
+  const eyes = k.glasses === "dark" ? "" : eye(-1) + eye(1);
   const roll = Math.max(-25, Math.min(25, -90 * p.ex)), mid = `${n(ax * Math.sin(yaw) * Math.cos(pitch))} ${n(-cz - az * Math.sin(pitch))}`;
   return place(x, 0, p, `<g fill="${PALETTE[k.color]}">${b.body}</g>` +
-    `<g clip-path="url(#clip-${k.shape})" fill="${PALETTE[k.eyes]}"><g transform="rotate(${n(roll)} ${mid})">${eye(-1)}${eye(1)}</g></g>`);
+    `<g clip-path="url(#clip-${k.shape})" fill="${PALETTE[k.eyes]}"><g transform="rotate(${n(roll)} ${mid})">${eyes}${specs}</g></g>`);
 }
 
-// The bots. 0 is the narrator. Each one has its own shape, colors and eyes.
+// The cast: 8 bots, 1 for each shape. Each one has its own color, eyes and size, and some have glasses.
+// No bot has a shape, color and eyes that the Grok Bot pictures show. 0 is the narrator: the approved hot pink ball.
 const CAST = [
-  { shape: "cloud", color: "teal" },
-  { shape: "ball", color: "mauve", eye: "bean", tilt: 10 },
-  { shape: "drop", color: "peach", eye: "dot", side: 0.12 },
-  { shape: "tri", color: "pink", eye: "tall" },
-  { shape: "squircle", color: "text" },
-  { shape: "clover", color: "red", eye: "wide", tilt: [14, -14] },
-  { shape: "hex", color: "yellow", eye: "dot", side: 0.32, high: 0.8, gap: 0.25 },
-  { shape: "pill", color: "green", eye: "arc" },
-  { shape: "egg", color: "sky", eye: "comma", tilt: -8 },
-  { shape: "mochi", color: "lavender", eye: "bean" },
-  { shape: "ball", color: "overlay0", eyes: "text", eye: "tall", tilt: 18, side: -0.12 },
-  { shape: "cloud", color: "flamingo", eye: "arc", tilt: 16 },
-  { shape: "tri", color: "sapphire", eye: "dot" },
-  { shape: "drop", color: "maroon", eye: "comma", tilt: [-10, 10] },
-  { shape: "squircle", color: "blue", eye: "tall", side: 0.1 },
-  { shape: "hex", color: "rosewater", eye: "bean", tilt: 6 },
-  { shape: "egg", color: "peach", eye: "tall" },
-  { shape: "clover", color: "green", eye: "comma", tilt: -6, high: 1.08 },
+  { shape: "ball", color: "hotpink" },
+  { shape: "hex", color: "lime", eyes: "crust", eye: "dot", size: 0.75 },
+  { shape: "pebble", color: "violet", eye: "dot", glasses: "clear", gap: 0.35, size: 0.9 },
+  { shape: "squircle", color: "red", eye: "dash", glasses: "dark", gap: 0.32, size: 0.9 },
+  { shape: "drop", color: "orange", eye: "arc", glasses: "clear", gap: 0.35, size: 0.75 },
+  { shape: "cloud", color: "blue", size: 1.05 },
+  { shape: "tri", color: "yellow", eyes: "crust", eye: "dash", size: 0.9 },
+  { shape: "pill", color: "sky", eye: "arc", glasses: "dark", gap: 0.32, size: 1.05 },
 ];
 
 const mascot = (x, t, ...poses) => blob(x, t, CAST[0], ...poses);   // the narrator
-const islander = (x, t, eyes, shape, ...poses) => blob(x, t, { shape, color: "text", eyes, size: 0.62 }, ...poses);
-const row = (count, center = 0, step = 1.25) => Array.from({ length: count }, (_, i) => center + step * (i - (count - 1) / 2));
