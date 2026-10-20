@@ -34,3 +34,5 @@ def build(beats):
     look.pop(day2, beats[5][0] + 0.3)
     ana.leave(beats[5][0] + 1.0)
     ben.leave(beats[5][0] + 1.0)
+    look.vanish(t_ana, beats[5][0] + 1.0)
+    look.vanish(t_ben, beats[5][0] + 1.0)

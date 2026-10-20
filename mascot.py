@@ -65,10 +65,11 @@ def Islander(loc, eyes="brown", scale=1.0, shape="ball"):
 
 
 def _leave(b, t, dist):
-    """Hop, then walk out of the picture to the right."""
+    """Hop, step back behind the row, then walk out of the picture to the right."""
     look.hop(b.root, t, 0.3, 0.4)
     x, y, z = b.root.location
-    look.move(b.root, t + 0.4, t + 1.9, (x + dist, y, z))
+    look.move(b.root, t + 0.4, t + 0.7, (x, y + 1.6, z))
+    look.move(b.root, t + 0.7, t + 2.2, (x + dist, y + 1.6, z))
 
 
 def crowd(eyes, center=0.0, step=1.25, y=0.0):

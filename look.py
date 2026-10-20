@@ -15,7 +15,6 @@ PALETTE = {
     "purple": "#9B5CFF", "teal": "#00B89C", "orange": "#FF6A00", "pink": "#FF2D8E",
     "red": "#FF2D4B", "blue": "#1B7BFF", "white": "#F7F7F7", "ink": "#111114", "brown": "#8B5A2B",
 }
-ROUGH = {"floor": 0.95}              # other colors use 0.35 (a little glossy)
 ZERO = (1e-4, 1e-4, 1e-4)
 FONT = Path(__file__).resolve().parent / "fonts" / "Inter-SemiBold.ttf"   # Inter. License: fonts/LICENSE.txt
 
@@ -43,7 +42,9 @@ def mat(color):
         _set(m, "use_nodes", True)
         b = m.node_tree.nodes["Principled BSDF"]
         b.inputs["Base Color"].default_value = rgb(PALETTE[color])
-        b.inputs["Roughness"].default_value = ROUGH.get(color, 0.35)
+        b.inputs["Roughness"].default_value = 0.35       # a little glossy
+        if color == "floor":   # no gloss: a glossy floor reflects the white ambient light and looks gray
+            b.inputs["Specular IOR Level"].default_value = 0.0
     return m
 
 

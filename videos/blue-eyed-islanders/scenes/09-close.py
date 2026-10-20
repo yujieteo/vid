@@ -3,7 +3,7 @@ import look, mascot
 NARRATION = [
     "What you know matters.",
     "What you know about what others know matters too.",
-    "The puzzle comes from the blog of Terry Tao.",
+    "This version of the puzzle is from the blog of Terry Tao.",
 ]
 CAMERA = "ortho"
 
