@@ -34,12 +34,12 @@ scene([
 - Colors come from `PALETTE`. Use only these colors.
 - Frame: x from -5 to 5, z from -1.2 to 4.4 (up). The narrator is at x = -3.6. The subject is at the right.
 - All scene files share 1 global scope: put constants inside the draw function.
-- Keep the SVG ready for export: only shapes, paths, gradients, filters and text in Inter. No CSS animation, no HTML in the SVG.
+- Keep the SVG ready for export: only shapes, paths, clip paths and text in Inter. No CSS animation, no HTML in the SVG.
 
 ## Look
 Reference pictures are in `ref/` on the local machine only. They are third-party art: never add them to Git.
 Look at them before you change the look.
-The look: a dark stage that moves slowly, pastel colors from `PALETTE` (Catppuccin Mocha) with soft shading, the Inter SemiBold font.
+The look: a dark stage that moves slowly, pastel colors from `PALETTE` (Catppuccin Mocha) in 2 flat tones, the Inter SemiBold font.
 Characters are a soft blob with 2 big eyes. No arms, no mouth, no feet. They breathe, blink, squint and look around.
 - `mascot(x, t, ...)` is the narrator (teal cloud).
 - `islander(x, t, eyes, shape, ...)` is a white blob. `eyes` is "blue" or "brown".
