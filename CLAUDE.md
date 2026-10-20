@@ -41,8 +41,8 @@ Reference pictures are in `ref/` on the local machine only. They are third-party
 Look at them before you change the look.
 The look: Grok Bot. A plain near-black stage, each body in 1 flat color from `PALETTE` with flat eyes (no outline, no shading),
 the Grok Bot proportions (measured in `ref/`, written in `look.js`), the Inter SemiBold font.
-Characters are a soft blob with 2 big eyes. No arms, no mouth, no feet. They breathe, blink, squint and look around.
-- `mascot(x, t, ...)` is the narrator (hot pink ball).
+Characters are a soft blob with 2 big eyes and 2 eyebrows. No arms, no mouth, no feet. They breathe, blink, squint and look around.
+- `mascot(x, t, ...)` is the narrator (pink ball).
 - `blob(x, t, kind, ...)` draws a character. `CAST` holds the bots. Shapes: ball, pebble, squircle, pill, drop, tri, cloud, hex.
 Match the Grok Bot style, but never make an exact copy of a Grok Bot character.
 

@@ -19,7 +19,7 @@ const MOVES = [   // [loop, moves of CAST[i] at the time u in its loop]
   [13, (u) => [follow(u, 1, 2.8, -1, 1), hop(u, 5, 0.6, 0.5), spin(u, 6.2), squash(u, 8.5), glance(u, 10.5)]],
   [14, (u) => [look(u, 1.5, 4.2, 0.5, 1), squint(u, 4.6, 1.2), squash(u, 7.2), spin(u, 8.2), glance(u, 10)]],
   [9.5, (u) => [hop(u, 1, 0.45, 0.45), spin(u, 1.9), wave(u, 3.4, 1.4, 10), look(u, 6, 7.6, -1, 0.4), blink(u, 8.3)]],
-  [11.5, (u) => [squash(u, 1.5), look(u, 3.2, 5, -1, 0.3), spin(u, 5.6), wave(u, 7, 1.4, 10), hop(u, 9.3, 0.3, 0.4)]],
+  [11.5, (u) => [squash(u, 1.5), look(u, 3.2, 5, -1, 0.3), spin(u, 5.6), glance(u, 7.2), hop(u, 9.3, 0.3, 0.4)]],
 ];
 const bots = (t) => CAST.map((kind, i) => {
   const [loop, moves] = MOVES[i], [x, z] = SPOT[i];
