@@ -11,6 +11,7 @@ const PALETTE = {
   crust: "#11111b", text: "#cdd6f4", white: "#ffffff",
   hotpink: "#ff2e88", red: "#ff3b3b", orange: "#ff7a1a", gold: "#ffaa00",
   green: "#1fc95b", sky: "#2ec5ff", blue: "#3d6bff", violet: "#9d4dff",
+  brown: "#6b3a14",   // only for brown eyes
 };
 const LEAD = 0.5, GAP = 0.45, TAIL = 0.8;   // seconds of silence before, between and after sentences
 
@@ -197,8 +198,8 @@ const APART = 0.27, EYE = ((r, len) => {
   return [...side(1), ...end(1), ...side(-1), ...end(-1)];
 })(0.115, 0.27);
 
-// A bot: a flat body in 1 color with 2 flat white eyes (no outline, no shading, no shadow). By itself it breathes, looks around,
-// blinks and squints, at its own times. The body stays upright: the eyes do the looking. kind: shape, color.
+// A bot: a flat body in 1 color with 2 flat eyes (white, or the color of kind.eyes) (no outline, no shading, no shadow). By itself it breathes, looks around,
+// blinks and squints, at its own times. The body stays upright: the eyes do the looking. kind: shape, color, eyes (optional).
 function blob(x, t, kind, ...poses) {
   const b = BODY[kind.shape], p = merge(poses), name = `${x} ${kind.shape} ${kind.color}`;
   let seed = 7;
@@ -234,7 +235,7 @@ function blob(x, t, kind, ...poses) {
   const eyes = [-1, 1].map((i) => draw(face(i, EYE.map(([a, h]) => [a, h * p.eye])))).join("");
   const roll = Math.max(-25, Math.min(25, -90 * p.ex)), mid = `${n(ax * Math.sin(yaw) * Math.cos(pitch))} ${n(-cz - az * Math.sin(pitch))}`;
   return place(x, 0, p, `<g fill="${PALETTE[kind.color]}">${b.body}</g>` +
-    `<g clip-path="url(#clip-${kind.shape})" fill="${PALETTE.white}"><g transform="rotate(${n(roll)} ${mid})">${eyes}</g></g>`);
+    `<g clip-path="url(#clip-${kind.shape})" fill="${PALETTE[kind.eyes ?? "white"]}"><g transform="rotate(${n(roll)} ${mid})">${eyes}</g></g>`);
 }
 
 // The cast: 8 bots, 1 for each shape, all with the same size and the same eyes. Each one has its own color.
@@ -251,3 +252,6 @@ const CAST = [
 ];
 
 const mascot = (x, t, ...poses) => blob(x, t, CAST[0], ...poses);   // the narrator
+
+// An islander: the bot of the cast with this body color. The eye color ("blue" or "brown") is the fact of the story.
+const islander = (x, t, color, eyes, ...poses) => blob(x, t, { ...CAST.find((c) => c.color === color), eyes }, ...poses);
