@@ -2,22 +2,32 @@
 <html lang="en">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bot</title>
+<title>Bots</title>
 <link rel="stylesheet" href="player.css">
 <main id="pic"></main>
 <script src="look.js"></script>
 <script>
-// 1 bot in the Grok Bot style, large and in the middle, with no voice. It does each of its moves once in a loop of LOOP
-// seconds. Between the moves, it lives by itself (it breathes, looks around, blinks and squints).
-const LOOP = 12, BOT = { shape: "ball", color: "hotpink", eyes: "white" };
-const bot = (t) => {
-  const u = t % LOOP;
-  return blob(0, t, BOT, { s: 1.5 }, pop(t, 0.3), look(u, 1, 2.3, 1, 0.7), blink(u, 3.1), follow(u, 3.9, 5.5, 1, -1),
-    squint(u, 6.3), hop(u, 8, 0.6, 0.55), squash(u, 9.6), wave(u, 10.5, 1.2));
-};
+// The cast of 8 bots in 2 rows, with no voice. Each bot does its own moves in a loop of its own length (seconds).
+// Between the moves, it lives by itself (it breathes, looks around, blinks and squints).
+// The moves follow the Grok Bot states: calm and curious, it sees a task, works (the face spins), waits, thinks, then settles when it is done.
+const SPOT = [[-1.25, 1.95], [3.75, 1.95], [-3.75, -0.95], [-3.75, 1.95], [3.75, -0.95], [1.25, 1.95], [-1.25, -0.95], [1.25, -0.95]];
+const MOVES = [   // [loop, moves of CAST[i] at the time u in its loop]
+  [11, (u) => [look(u, 1, 2.4, 1, 0.7), hop(u, 4, 0.4, 0.5), spin(u, 5.2), squash(u, 6.6), wave(u, 8.4, 1.2)]],
+  [9, (u) => [glance(u, 1.5), spin(u, 3), hop(u, 4.2, 0.3, 0.35), hop(u, 5, 0.3, 0.35), squint(u, 6.8)]],
+  [12.5, (u) => [look(u, 2, 4.5, -0.8, -0.6), squint(u, 5.5, 1.4), spin(u, 7.4), squash(u, 9)]],
+  [10, (u) => [wave(u, 1.2, 1.6, 8), spin(u, 3.4), hop(u, 5, 0.4, 0.5), look(u, 7, 8.6, 1, 0)]],
+  [13, (u) => [follow(u, 1, 2.8, -1, 1), hop(u, 5, 0.6, 0.5), spin(u, 6.2), squash(u, 8.5), glance(u, 10.5)]],
+  [14, (u) => [look(u, 1.5, 4.2, 0.5, 1), squint(u, 4.6, 1.2), squash(u, 7.2), spin(u, 8.2), glance(u, 10)]],
+  [9.5, (u) => [hop(u, 1, 0.45, 0.45), spin(u, 1.9), wave(u, 3.4, 1.4, 10), look(u, 6, 7.6, -1, 0.4), blink(u, 8.3)]],
+  [11.5, (u) => [squash(u, 1.5), look(u, 3.2, 5, -1, 0.3), spin(u, 5.6), glance(u, 7.2), hop(u, 9.3, 0.3, 0.4)]],
+];
+const bots = (t) => CAST.map((kind, i) => {
+  const [loop, moves] = MOVES[i], [x, z] = SPOT[i];
+  return blob(x, t, kind, { z, s: 0.95 }, pop(t, 0.2 + 0.15 * i), moves(t % loop));
+}).join("");
 
 (function frame() {
-  document.getElementById("pic").innerHTML = svg(bot(performance.now() / 1000));
+  document.getElementById("pic").innerHTML = svg(bots(performance.now() / 1000));
   requestAnimationFrame(frame);
 })();
 </script>

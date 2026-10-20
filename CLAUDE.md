@@ -29,8 +29,8 @@ scene([
   mascot(-3.6, t, pop(t, 0.1), hop(t, at(0, "one"))) +   // b[i] = [start, end] of sentence i
   label("Title", 1.5, 2.3, 0.75, "blue", pop(t, at(1))));
 ```
-- Shapes: `ball`, `label`, `blob`, `mascot`, `islander`. Motion: `pop`, `out`, `hop`, `squash`, `blink`, `squint`,
-  `look`, `follow`, `glance`, `wave`, `walk`, `leave`. A shape takes any number of motions. Each motion is a function of t.
+- Shapes: `label`, `blob`, `mascot`. Motion: `pop`, `out`, `hop`, `squash`, `blink`, `squint`,
+  `look`, `follow`, `glance`, `wave`, `spin`. A shape takes any number of motions. Each motion is a function of t.
 - Colors come from `PALETTE`. Use only these colors.
 - Frame: x from -5 to 5, z from -1.2 to 4.4 (up). The narrator is at x = -3.6. The subject is at the right.
 - All scene files share 1 global scope: put constants inside the draw function.
@@ -42,9 +42,8 @@ Look at them before you change the look.
 The look: Grok Bot. A plain near-black stage, each body in 1 flat color from `PALETTE` with flat eyes (no outline, no shading),
 the Grok Bot proportions (measured in `ref/`, written in `look.js`), the Inter SemiBold font.
 Characters are a soft blob with 2 big eyes. No arms, no mouth, no feet. They breathe, blink, squint and look around.
-- `mascot(x, t, ...)` is the narrator (teal cloud).
-- `islander(x, t, eyes, shape, ...)` is a white blob. `eyes` is "blue" or "brown".
-- `blob(x, t, kind, ...)` draws a character. `CAST` holds the bots. Shapes: ball, egg, squircle, pill, mochi, drop, tri, cloud, clover, hex.
+- `mascot(x, t, ...)` is the narrator (hot pink ball).
+- `blob(x, t, kind, ...)` draws a character. `CAST` holds the bots. Shapes: ball, pebble, squircle, pill, drop, tri, cloud, hex.
 Match the Grok Bot style, but never make an exact copy of a Grok Bot character.
 
 ## Rules for change

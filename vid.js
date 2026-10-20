@@ -15,7 +15,7 @@ const look = vm.createContext({});
 vm.runInContext(fs.readFileSync("look.js", "utf8"), look, { filename: "look.js" });
 const { timeline, cues, svg, said } = vm.runInContext("({ timeline, cues, svg, said })", look);
 const scenesOf = (name) => fs.readdirSync(`videos/${name}/scenes`).filter((f) => f.endsWith(".js")).sort();
-const videos = () => fs.readdirSync("videos").filter((v) => fs.existsSync(`videos/${v}/scenes`) && scenesOf(v).length).sort();
+const videos = () => (fs.existsSync("videos") ? fs.readdirSync("videos") : []).filter((v) => fs.existsSync(`videos/${v}/scenes`) && scenesOf(v).length).sort();
 
 function load(name) {   // the scenes of a video. Each sentence has its voice file (if it exists) and its seconds.
   const dir = `videos/${name}`, have = fs.existsSync(`${dir}/voice`) ? fs.readdirSync(`${dir}/voice`) : [];
