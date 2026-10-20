@@ -7,12 +7,14 @@ import bpy
 import config
 
 OUTLINE = True                       # thin line around shapes
-KEY, FILL, AMBIENT = 1.5, 0.5, 0.55  # light strengths. Tune with a still frame.
+KEY, FILL, RIM, AMBIENT = 3.0, 0.15, 2.0, 0.12  # light strengths. Tune with a still frame.
 PALETTE = {
-    "sky": "#EAF3FA", "floor": "#F6E3D3", "body": "#FF8A5B", "belly": "#FFD9C2",
-    "ink": "#2B2B3A", "white": "#FFFFFF", "skin": "#F2B48C", "silver": "#C9D1D9",
-    "gold": "#EDB93C", "blue": "#5B8DEF", "brown": "#7A4A21",
+    "sky": "#0E1224", "floor": "#2A3566", "text": "#FFFFFF", "amber": "#FFB454",
+    "body": "#FF5E3A", "belly": "#FFE1C9", "ink": "#1A1B2E", "white": "#FFFFFF",
+    "skin": "#FFC39A", "silver": "#DDE3EA", "gold": "#FFC933", "blue": "#4D8DFF",
+    "brown": "#8A5224",
 }
+ROUGH = {"floor": 0.95}              # roughness. Other colors use 0.45 (a little glossy).
 ZERO = (1e-4, 1e-4, 1e-4)
 
 
@@ -39,7 +41,7 @@ def mat(color):
         _set(m, "use_nodes", True)
         b = m.node_tree.nodes["Principled BSDF"]
         b.inputs["Base Color"].default_value = rgb(PALETTE[color])
-        b.inputs["Roughness"].default_value = 0.8
+        b.inputs["Roughness"].default_value = ROUGH.get(color, 0.45)
     return m
 
 
@@ -62,9 +64,10 @@ def _world():
     bg.inputs["Strength"].default_value = AMBIENT
 
 
-def _sun(name, strength, rot_deg, angle_deg, shadow):
+def _sun(name, strength, rot_deg, angle_deg, shadow, color=(1.0, 1.0, 1.0)):
     d = bpy.data.lights.new(name, "SUN")
     d.energy = strength
+    d.color = color
     d.angle = math.radians(angle_deg)
     _set(d, "use_shadow", shadow)
     o = bpy.data.objects.new(name, d)
@@ -122,8 +125,9 @@ def reset(preview=False, camera="perspective", seconds=5.0):
     floor = bpy.context.object
     floor.name = "floor"
     floor.data.materials.append(mat("floor"))
-    _sun("key", KEY, (50, 0, -30), 20, True)
+    _sun("key", KEY, (50, 0, -30), 8, True, (1.0, 0.95, 0.88))      # warm, from front left
     _sun("fill", FILL, (70, 0, 40), 40, False)
+    _sun("rim", RIM, (-55, 0, -30), 15, False, (0.65, 0.78, 1.0))   # cool, from behind right
     _camera(camera)
     if OUTLINE:
         try:
@@ -153,7 +157,7 @@ def disc(name, radius, color, loc, thick=0.07):
     return o
 
 
-def label(text, loc, size=0.5, color="ink"):
+def label(text, loc, size=0.5, color="text"):
     bpy.ops.object.text_add(location=loc, rotation=(math.pi / 2, 0, 0))
     o = bpy.context.object
     o.data.body, o.data.size, o.data.extrude = text, size, 0.02

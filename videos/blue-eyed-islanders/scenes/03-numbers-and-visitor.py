@@ -14,7 +14,7 @@ def build(beats):
     blue = mascot.Islander((0.4, 0, 0), "blue", scale=1.3)
     brown = mascot.Islander((3.4, 0, 0), "brown", scale=1.3)
     n_blue = look.label("100", (0.4, 0, 2.5), size=1.0, color="blue")
-    n_brown = look.label("900", (3.4, 0, 2.5), size=1.0, color="brown")
+    n_brown = look.label("900", (3.4, 0, 2.5), size=1.0, color="amber")
     look.pop(blue.root, beats[0][0])
     look.pop(n_blue, beats[0][0] + 0.3)
     look.pop(brown.root, beats[1][0])
