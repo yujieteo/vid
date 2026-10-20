@@ -10,7 +10,7 @@ CAMERA = "ortho"
 
 def build(beats):
     m = mascot.Mascot(loc=(-3.6, 0, 0))
-    coin = look.disc("special_coin", 0.9, "gold", (1.2, 0, 1.6))
+    coin = look.ball("special_coin", (1.2, 0, 1.6), (0.9, 0.12, 0.9), "gold")
     text = look.label("What changed, and when?", (1.2, 0, 3.4), size=0.6)
     look.pop(coin, beats[0][0])
     look.spin(coin, beats[0][0], beats[0][1])

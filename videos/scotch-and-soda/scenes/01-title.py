@@ -2,7 +2,7 @@ import look, mascot
 
 NARRATION = [
     "This is Scotch and Soda.",
-    "It is a classic coin trick.",
+    "It is a trick with two coins.",
     "Here is what the audience sees.",
 ]
 CAMERA = "perspective"
