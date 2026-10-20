@@ -31,20 +31,18 @@ scene([
 ```
 - Shapes: `label`, `blob`, `mascot`. Motion: `pop`, `out`, `hop`, `squash`, `blink`, `squint`,
   `look`, `glance`, `wave`, `spin`. A shape takes any number of motions. Each motion is a function of t.
+- A label takes `^{k,p}` and `_{k}` (or `^p`, `_k`) for small raised or lowered text. Do not make a separate label for it.
 - Colors come from `PALETTE`. Use only these colors.
 - Frame: x from -5 to 5, z from -1.2 to 4.4 (up). The narrator is at x = -3.6. The subject is at the right.
 - All scene files share 1 global scope: put constants inside the draw function.
 - Keep the SVG ready for export: only shapes, paths, clip paths and text in Inter. No CSS animation, no HTML in the SVG.
 
 ## Look
-Reference pictures are in `ref/` on the local machine only. They are third-party art: never add them to Git.
-Look at them before you change the look.
-The look: Grok Bot. A plain near-black stage, each body in 1 flat color from `PALETTE` with flat eyes (no outline, no shading),
-the Grok Bot proportions (measured in `ref/`, written in `look.js`), the Inter SemiBold font.
+A look change starts with the comment at the top of `look.js`.
+The look: Grok Bot. A plain near-black stage, each body in 1 flat color from `PALETTE` with flat eyes (no outline, no shading), the Inter SemiBold font.
 Characters are a soft blob with 2 big eyes. No arms, no mouth, no feet. They breathe, blink, squint and look around.
 - `mascot(x, t, ...)` is the narrator (hot pink ball).
 - `blob(x, t, kind, ...)` draws a character. `CAST` holds the bots. Shapes: ball, pebble, squircle, pill, drop, tri, cloud, hex.
-Match the Grok Bot style, but never make an exact copy of a Grok Bot character.
 
 ## Rules for change
 - Delete before you add. Add a rule or a part only when a failed scene shows the need.

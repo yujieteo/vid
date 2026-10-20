@@ -5,6 +5,10 @@
 // dx, z, up (height above the ground), tilt (degrees), ex and ez (eye move) and spin (the face around the body, radians) add.
 // s (size), sx, sz (squash and stretch), eye (eye height) and gaze (how much the eyes look around by themselves) multiply.
 
+// Look rules. Reference pictures of Grok Bot are in `ref/` on the local machine only. They are third-party art: never add them to Git.
+// Look at them before you change the look. The proportions below are measured there. Match the Grok Bot style,
+// but never make an exact copy of a Grok Bot character.
+
 // The stage (crust) and the text come from Catppuccin Mocha (https://catppuccin.com/palette).
 // The bots: 1 bright, saturated color each, with white eyes, as in Grok Bot.
 const PALETTE = {
@@ -140,8 +144,17 @@ const place = (x, z, p, body) =>
   `<g transform="translate(${n(x + p.dx)} ${n(-z - p.z - p.up)}) rotate(${n(p.tilt)}) scale(${n(p.s * p.sx)} ${n(p.s * p.sz)})">${body}</g>`;
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+// In a label, ^{...} and _{...} (or ^x and _x for 1 character) draw small raised or lowered text in the same text element.
+function marked(text, size) {
+  const parts = text.split(/([\^_](?:\{[^}]*\}|[^\s{]))/);
+  return parts.map((part, i) => {
+    if (i % 2 === 0) return esc(part);
+    const up = part[0] === "^", dy = n((up ? -0.4 : 0.2) * size);
+    return `<tspan font-size="${n(0.7 * size)}" dy="${dy}">${esc(part.slice(1).replace(/^\{|\}$/g, ""))}</tspan><tspan dy="${-dy}"></tspan>`;
+  }).join("");
+}
 const label = (text, x, z, size, color = "text", ...poses) => place(x, z, merge(poses),
-  `<text font-size="${size}" fill="${PALETTE[color]}" text-anchor="middle" dominant-baseline="central">${esc(text)}</text>`);
+  `<text font-size="${size}" fill="${PALETTE[color]}" text-anchor="middle" dominant-baseline="central">${marked(text, size)}</text>`);
 
 const circles = (list) => list.map(([x, z, r]) => `<circle cx="${x}" cy="${-z}" r="${r}"/>`).join("");
 function rounded(points, k) {   // a polygon with round corners. points: [x, z]. k: the part of each side that bends
