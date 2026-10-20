@@ -11,7 +11,7 @@ KEY, FILL, AMBIENT = 1.3, 0.5, 0.45  # light strengths. Tune with a still frame.
 PALETTE = {
     "sky": "#EAF3FA", "floor": "#F6E3D3", "body": "#FF8A5B", "belly": "#FFD9C2",
     "ink": "#2B2B3A", "white": "#FFFFFF", "skin": "#F2B48C", "silver": "#C9D1D9",
-    "gold": "#EDB93C", "blue": "#5B8DEF",
+    "gold": "#EDB93C", "blue": "#5B8DEF", "brown": "#7A4A21",
 }
 ZERO = (1e-4, 1e-4, 1e-4)
 

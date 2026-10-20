@@ -1,5 +1,14 @@
-"""The mascot. Round body, simple eyes, soft colors. It is built from code, so it is always the same."""
+"""The mascot and the islanders. Round bodies, simple eyes, soft colors.
+They are built from code, so they are always the same."""
 import look
+
+
+def _blink(eyes, t):
+    for e in eyes:
+        s = tuple(e.scale)
+        look.key(e, t, scale=s)
+        look.key(e, t + 0.08, scale=(s[0], s[1], s[2] * 0.1))
+        look.key(e, t + 0.16, scale=s)
 
 
 class Mascot:
@@ -25,11 +34,7 @@ class Mascot:
         self.rest_r = tuple(self.hand_r.location)
 
     def blink(self, t):
-        for e in (self.eye_l, self.eye_r):
-            s = tuple(e.scale)
-            look.key(e, t, scale=s)
-            look.key(e, t + 0.08, scale=(s[0], s[1], s[2] * 0.1))
-            look.key(e, t + 0.16, scale=s)
+        _blink((self.eye_l, self.eye_r), t)
 
     def hop(self, t, height=0.5):
         look.hop(self.root, t, height, 0.5)
@@ -49,3 +54,49 @@ class Mascot:
 
     def rest(self, t0, t1):
         look.move(self.hand_r, t0, t1, self.rest_r)
+
+
+class Islander:
+    """A small round person. eyes = "blue" or "brown". Many of them make a crowd."""
+
+    def __init__(self, loc, eyes="brown", scale=1.0):
+        self.root = look.empty("islander")
+
+        def part(name, p, s, color):
+            o = look.ball(name, p, s, color)
+            o.parent = self.root
+            return o
+
+        self.body = part("body", (0, 0, 0.65), (0.55, 0.45, 0.6), "belly")
+        self.eye_l = part("eye_l", (-0.2, -0.38, 0.85), (0.15, 0.09, 0.19), eyes)
+        self.eye_r = part("eye_r", (0.2, -0.38, 0.85), (0.15, 0.09, 0.19), eyes)
+        part("shine_l", (-0.17, -0.45, 0.93), (0.05, 0.03, 0.06), "white")
+        part("shine_r", (0.23, -0.45, 0.93), (0.05, 0.03, 0.06), "white")
+        part("foot_l", (-0.2, -0.15, 0.08), (0.2, 0.25, 0.09), "ink")
+        part("foot_r", (0.2, -0.15, 0.08), (0.2, 0.25, 0.09), "ink")
+        self.root.location = loc
+        self.root.scale = (scale, scale, scale)
+        self.x = loc[0]
+
+    def blink(self, t):
+        _blink((self.eye_l, self.eye_r), t)
+
+    def hop(self, t, height=0.35):
+        look.hop(self.root, t, height, 0.45)
+
+    def leave(self, t, dist=9.0):
+        """Hop, then walk out of the picture to the right."""
+        look.hop(self.root, t, 0.3, 0.4)
+        x, y, z = self.root.location
+        look.move(self.root, t + 0.4, t + 1.9, (x + dist, y, z))
+
+
+def crowd(eyes, center=0.0, step=1.25, y=0.0):
+    """A row of islanders. eyes is a list like ["blue", "brown", "brown"]."""
+    x0 = center - step * (len(eyes) - 1) / 2
+    return [Islander((x0 + i * step, y, 0), e) for i, e in enumerate(eyes)]
+
+
+def appear(people, t0, gap=0.12):
+    for i, p in enumerate(people):
+        look.pop(p.root, t0 + gap * i)
