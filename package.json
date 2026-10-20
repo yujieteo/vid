@@ -1,0 +1,9 @@
+{
+  "name": "vid",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@breezystack/lamejs": "1.2.7",
+    "kokoro-js": "1.2.1"
+  }
+}

@@ -1,4 +1,4 @@
-# The Blue-Eyed Islanders puzzle (video 2)
+# The Blue-Eyed Islanders puzzle
 
 Goal: teach the puzzle, the answer, and why the visitor's remark matters.
 
