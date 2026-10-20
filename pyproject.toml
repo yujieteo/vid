@@ -1,0 +1,15 @@
+[project]
+name = "vid"
+version = "0.1.0"
+requires-python = "==3.13.*"
+dependencies = [
+  "bpy==5.2.2",
+  "kokoro-onnx",
+  "soundfile",
+  "imageio-ffmpeg",
+  "numpy",
+]
+
+[tool.uv]
+package = false
+environments = ["sys_platform == 'darwin' and platform_machine == 'arm64'"]
