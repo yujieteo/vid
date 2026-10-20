@@ -5,7 +5,7 @@ Goal: tell the whole story of Shakespeare's Hamlet, from the ghost to the end. A
 ## Source (read on 2026-10-20)
 - William Shakespeare, "The Tragedy of Hamlet, Prince of Denmark". Project Gutenberg eBook #1524 (public domain): https://www.gutenberg.org/ebooks/1524
 - The play is the only source. The video states only what the play text says or shows.
-- Each quoted line is exact and short. `/Users/yj/src/firstmate/data/vid-hamlet/check-quotes.mjs` checks each quote against the text.
+- Each quoted line is exact and short. Each quote was checked against the text.
 
 ## Facts used (act and scene in the play)
 - I.1 Night, on the wall of Elsinore. Barnardo, Marcellus and Horatio see a ghost that looks like the dead King. It goes when the cock crows. They decide to tell Hamlet.

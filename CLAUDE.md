@@ -34,7 +34,7 @@ scene([
 - A label takes `^{k,p}` and `_{k}` (or `^p`, `_k`) for small raised or lowered text. Do not make a separate label for it.
 - Colors come from `PALETTE`. Use only these colors.
 - Frame: x from -5 to 5, z from -1.2 to 4.4 (up). The narrator is at x = -3.6. The subject is at the right.
-- All scene files share 1 global scope: put constants inside the draw function.
+- The scene files of 1 video share 1 global scope (the page loads them together): put constants inside the draw function. Different videos do not share a scope.
 - Keep the SVG ready for export: only shapes, paths, clip paths and text in Inter. No CSS animation, no HTML in the SVG.
 
 ## Look
