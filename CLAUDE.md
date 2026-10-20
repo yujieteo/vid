@@ -1,7 +1,7 @@
 # Video repo: rules for Claude
 
 One prompt makes one video. A video is a folder of scene files. The same files give the same video.
-Versions are pinned in `uv.lock`. All work and all commits happen in this local copy.
+Versions are pinned in `uv.lock`. Each change goes to https://github.com/yujieteo/vid through a pull request.
 
 ## Requirements (version 1)
 1. A prompt makes `videos/<name>/outline.md` and one file for each scene in `videos/<name>/scenes/`.
@@ -41,7 +41,8 @@ Frame: camera sees x from -5 to 5. Put the narrator at the left and the subject 
 Speed: one 1080p frame must take about 1 s. A frame that takes much more is a bug: find the cause first.
 
 ## Look
-Reference pictures are in `ref/`. Look at them before you change the look.
+Reference pictures are in `ref/` on the local machine only. They are third-party art: never add them to Git.
+Look at them before you change the look.
 The look is code in `look.py`: a near-black stage, one soft key light, a little gloss, flat saturated colors
 from `look.PALETTE`. No outline (it made each frame very slow).
 Characters are in `mascot.py`: a soft blob and two dark pill eyes. No arms, no mouth, no feet.
