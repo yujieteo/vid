@@ -10,5 +10,7 @@ mkdir -p cache
     echo "== $s"
     uv run vid.py still "$s" || echo "STILL FAILED: $s"
   done
+  echo "== timing: full render of scene 1"
+  uv run vid.py scene "videos/$1/scenes/01-title.py" || echo "SCENE FAILED"
   echo "== done"
 } 2>&1 | tee cache/check.log

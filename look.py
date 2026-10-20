@@ -7,7 +7,7 @@ import bpy
 import config
 
 OUTLINE = True                       # thin line around shapes
-KEY, FILL, AMBIENT = 1.3, 0.5, 0.45  # light strengths. Tune with a still frame.
+KEY, FILL, AMBIENT = 1.5, 0.5, 0.55  # light strengths. Tune with a still frame.
 PALETTE = {
     "sky": "#EAF3FA", "floor": "#F6E3D3", "body": "#FF8A5B", "belly": "#FFD9C2",
     "ink": "#2B2B3A", "white": "#FFFFFF", "skin": "#F2B48C", "silver": "#C9D1D9",
@@ -81,7 +81,7 @@ def _camera(kind):
     else:
         d.lens = 50
     cam = bpy.data.objects.new("cam", d)
-    cam.location = (0, -14, 3.5)
+    cam.location = (0, -14, 5.5)   # high enough that the horizon is out of the picture
     sc.collection.objects.link(cam)
     target = empty("cam_target")
     target.location = (0, 0, 1.4)
@@ -96,6 +96,8 @@ def _outline(height):
     vl.use_freestyle = True
     fs = vl.freestyle_settings
     ls = fs.linesets[0] if len(fs.linesets) else fs.linesets.new("outline")
+    if ls.linestyle is None:
+        ls.linestyle = bpy.data.linestyles.new("ink")
     ls.linestyle.thickness = 1.6 * height / 1080
     ls.linestyle.color = rgb(PALETTE["ink"])[:3]
 
