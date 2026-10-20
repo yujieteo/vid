@@ -11,7 +11,6 @@ const PALETTE = {
   crust: "#11111b", text: "#cdd6f4", white: "#ffffff",
   hotpink: "#ff2e88", red: "#ff3b3b", orange: "#ff7a1a", gold: "#ffaa00",
   green: "#1fc95b", sky: "#2ec5ff", blue: "#3d6bff", violet: "#9d4dff",
-  brown: "#6b3a14",   // only for brown eyes
 };
 const LEAD = 0.5, GAP = 0.45, TAIL = 0.8;   // seconds of silence before, between and after sentences
 
@@ -252,6 +251,3 @@ const CAST = [
 ];
 
 const mascot = (x, t, ...poses) => blob(x, t, CAST[0], ...poses);   // the narrator
-
-// An islander: the bot of the cast with this body color. The eye color ("blue" or "brown") is the fact of the story.
-const islander = (x, t, color, eyes, ...poses) => blob(x, t, { ...CAST.find((c) => c.color === color), eyes }, ...poses);

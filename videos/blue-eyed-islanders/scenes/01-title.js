@@ -1,3 +1,8 @@
+// Parts only for this video. All scene files share 1 global scope.
+PALETTE.brown = "#6b3a14";   // only for brown eyes
+// An islander: the bot of the cast with this body color. The eye color ("blue" or "brown") is the fact of the story.
+const islander = (x, t, color, eyes, ...poses) => blob(x, t, { ...CAST.find((c) => c.color === color), eyes }, ...poses);
+
 scene([
   "Here is a famous logic puzzle.",
   ["It is called the Blue-Eyed Islanders puzzle.", 1],
