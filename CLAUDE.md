@@ -12,13 +12,13 @@ Each change goes to https://github.com/yujieteo/vid through a pull request. CI r
 - Git tracks the voice (`videos/<name>/voice/`) and the page (`videos/<name>/index.html`). `make` writes them: commit them with the video.
 
 ## Steps for one video
-1. Write `outline.md` (1 page). List the sources and the facts. Use only facts that you read in a source.
+1. Write `outline.md` (1 page). List the facts. List the sources only for real facts that the video states, and use only facts that you read in a source.
    Never guess a fact. If a fact is missing, write that in the outline and leave it out of the video.
 2. Write the scene files: `videos/<name>/scenes/01-name.js`, `02-name.js`, ...
 3. Run `node vid.js check`. Fix each error.
 4. Run `node vid.js make`. It makes the voice only for new sentences.
 5. Open `videos/<name>/index.html` in Chrome. Look at a few frames of each scene and fix what is wrong.
-First time on a machine: `npm install` (only `make` needs it, and only for a new sentence).
+The first new sentence on a machine installs the voice packages and the voice model in `~/.cache/vid`. All copies of the project share them.
 
 ## Scene file
 ```js
