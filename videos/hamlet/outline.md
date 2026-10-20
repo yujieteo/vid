@@ -32,5 +32,8 @@ Goal: tell the whole story of Shakespeare's Hamlet, from the ghost to the end. A
 - The long speeches in full. The video quotes short lines only.
 - Scenes with no part in the story line (for example, the long talk about the child actors).
 
-## Scenes (about 30 s each)
-1 Title and cast. 2 The ghost on the wall. 3 The new King. 4 Hamlet hears. 5 Laertes and Polonius. 6 The Ghost speaks. 7 The oath. 8 Polonius spies. 9 The madness. 10 Rosencrantz and Guildenstern. 11 The players. 12 To be or not to be. 13 The nunnery. 14 The plan. 15 The Mousetrap. 16 The prayer. 17 The Queen's room. 18 The body. 19 The army. 20 Ophelia sings. 21 The pirates. 22 The plot. 23 The gravediggers. 24 The funeral. 25 The new letter. 26 The match. 27 The end. 28 Close.
+## Scenes (about 40 s each, 23 scenes, about 16 minutes)
+1 Title and cast. 2 The ghost on the wall. 3 The new King. 4 Hamlet hears. 5 The Ghost speaks. 6 The oath. 7 The madness. 8 The players. 9 To be or not to be. 10 The nunnery. 11 The Mousetrap. 12 The prayer. 13 The Queen's room. 14 The body. 15 Ophelia sings. 16 The pirates. 17 The plot. 18 The gravediggers. 19 The funeral. 20 The new letter. 21 The match. 22 The end. 23 Close.
+
+## Cut for length
+The first draft had 28 scenes and ran 19.2 minutes. These 5 scenes were cut: Laertes and Polonius (I.3), Polonius spies (II.1), Rosencrantz and Guildenstern (II.2), The plan (III.2) and The army (IV.4).
