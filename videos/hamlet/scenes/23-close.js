@@ -11,8 +11,8 @@ scene([
 ], (t, at, b) =>
   hact(5, t) + hn(t, look(t, at(5, "That is"), at(8), 1), hop(t, at(5, "That is"), 0.25)) +
   hb("fortinbras", 2.8, t, pop(t, at(0, "Fortinbras")), hop(t, at(2, "Fortinbras says"), 0.25), wave(t, at(3, "He orders"), 1.2, 6)) +
-  hb("fortinbras", 4.1, t, { s: 0.5 }, pop(t, at(0, "his men") + 0.1)) +
-  hb("fortinbras", 4.8, t, { s: 0.5 }, pop(t, at(0, "his men") + 0.2)) +
+  hb("fortinbras", 3.9, t, { s: 0.5 }, pop(t, at(0, "his men") + 0.1)) +
+  hb("fortinbras", 4.55, t, { s: 0.5 }, pop(t, at(0, "his men") + 0.2)) +
   hb("horatio", 0.6, t, pop(t, 0.3), look(t, at(1, "Horatio says"), at(2), 1), hop(t, at(8, "Only"), 0.3)) +
   hprop("crown", 2.8, 1.9, "gold", pop(t, at(2, "crown")), out(t, at(4) - 0.2)) +
   hsay(["Where is this sight?"], -0.8, 3.3, "gold", pop(t, at(0, "asks")), out(t, at(1) - 0.1)) +

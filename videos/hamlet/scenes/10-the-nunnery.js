@@ -12,8 +12,8 @@ scene([
   hb("ophelia", 0.2, t, pop(t, 0.2), hop(t, at(0, "gifts"), 0.2), squash(t, at(1, "deceived")), squint(t, at(3, "Ophelia is"), 2)) +
   hprop("flower", 0.2, 1.9, "orange", pop(t, at(0, "gifts")), out(t, at(1) - 0.2)) +
   hb("hamlet", 2.2, t, pop(t, at(1, "Hamlet says")), wave(t, at(2, "He tells"), 1.5, 6), out(t, at(3, "Hamlet leaves") + 0.2)) +
-  hb("claudius", 3.3, t, pop(t, at(4, "Claudius")), look(t, at(4, "He says"), at(5), -1), hop(t, at(6, "He says"), 0.2)) +
-  hb("polonius", 4.6, t, { s: 0.7 }, pop(t, at(4, "Claudius") + 0.3), wave(t, at(7, "Polonius"), 1.5, 8)) +
+  hb("claudius", 2.6, t, pop(t, at(4, "Claudius")), look(t, at(4, "He says"), at(5), -1), hop(t, at(6, "He says"), 0.2)) +
+  hb("polonius", 4.1, t, { s: 0.7 }, pop(t, at(4, "Claudius") + 0.3), wave(t, at(7, "Polonius"), 1.5, 8)) +
   hsay(["I loved you not."], -1.0, 3.3, "violet", pop(t, at(1, "I loved")), out(t, at(2) - 0.1)) +
   hsay(["Get thee to a nunnery."], -1.0, 3.3, "violet", pop(t, at(2, "Get")), out(t, at(3) - 0.1)) +
   hsay(["O, what a noble mind", "is here o'erthrown!"], -1.0, 3.3, "orange", pop(t, at(3, "O,")), out(t, at(4) - 0.1)) +

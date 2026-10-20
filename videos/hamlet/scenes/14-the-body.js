@@ -10,11 +10,11 @@ scene([
 ], (t, at, b) =>
   hact(4, t) + hn(t, look(t, at(3, "At last"), at(7), 1)) +
   hb("gertrude", -1.8, t, { s: 0.75 }, pop(t, 0.2), out(t, at(1, "Rosencrantz") - 0.2)) +
-  hb("claudius", 2.8, t, pop(t, 0.2), squash(t, at(0, "afraid")), look(t, at(3, "At last"), at(5), -1), squint(t, at(5, "Claudius is"), 1.5), hop(t, at(7, "Alone"), 0.2)) +
-  hb("rosencrantz", -1.2, t, { s: 0.7 }, pop(t, at(1, "Rosencrantz")), out(t, at(6, "Claudius says") + 1.5)) +
-  hb("guildenstern", 0.2, t, { s: 0.7 }, pop(t, at(1, "Guildenstern")), out(t, at(6, "Claudius says") + 1.5)) +
-  hb("hamlet", 1.6, t, pop(t, at(2, "Hamlet will")), wave(t, at(3, "Hamlet says"), 1.2, 6), squint(t, at(4, "Hamlet says"), 2), out(t, at(6, "Claudius says") + 2.5)) +
-  hprop("letter", 2.8, 1.9, "white", pop(t, at(7, "writes"))) +
+  hb("claudius", 3.3, t, pop(t, 0.2), squash(t, at(0, "afraid")), look(t, at(3, "At last"), at(5), -1), squint(t, at(5, "Claudius is"), 1.5), hop(t, at(7, "Alone"), 0.2)) +
+  hb("rosencrantz", -1.3, t, { s: 0.7 }, pop(t, at(1, "Rosencrantz")), out(t, at(6, "Claudius says") + 1.5)) +
+  hb("guildenstern", -0.1, t, { s: 0.7 }, pop(t, at(1, "Guildenstern")), out(t, at(6, "Claudius says") + 1.5)) +
+  hb("hamlet", 1.5, t, pop(t, at(2, "Hamlet will")), wave(t, at(3, "Hamlet says"), 1.2, 6), squint(t, at(4, "Hamlet says"), 2), out(t, at(6, "Claudius says") + 2.5)) +
+  hprop("letter", 3.3, 1.9, "white", pop(t, at(7, "writes"))) +
   hsay(["Safely stowed."], -1.0, 3.3, "violet", pop(t, at(2, "He says")), out(t, at(3) - 0.1)) +
   hsay(["Now, Hamlet,", "where's Polonius?"], -1.0, 3.3, "red", pop(t, at(3, "Now")), out(t, at(3, "Hamlet says") - 0.1)) +
   hsay(["At supper."], -1.0, 3.3, "violet", pop(t, at(3, "Hamlet says")), out(t, at(4) - 0.1)) +
