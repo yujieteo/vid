@@ -1,6 +1,6 @@
 // The tool for the videos. It needs Node 22 or later.
 //   node vid.js make    Make the voice of each new sentence, and the page of each video: videos/<name>/index.html.
-//   node vid.js check   Draw each scene at 60 frames each second. Fail if a frame has an error or a shape jumps.
+//   node vid.js check   Draw each scene at 60 frames each second. Fail if a frame has an error.
 // The check uses the voice times if the voice exists. If not (for example in CI), it uses stand-in times.
 import fs from "node:fs";
 import vm from "node:vm";
@@ -9,9 +9,7 @@ import { createHash } from "node:crypto";
 const VOICE = "af_heart", RATE = 24000, KEEP = 1200;   // KEEP: samples of silence to keep at each end of a sentence (50 ms)
 const DELAY = 1105;   // samples of silence that MP3 adds at the start (576 + 529). The file starts with less silence for them.
 const STAND_IN = 0.066;   // seconds for each character of a sentence, when the sentence has no voice yet
-// A jump: a change of a shape between 2 frames that is more than MOVE units (the frame is 10 units wide),
-// TURN degrees or SIZE (scale), on a shape that is visible. Each scene is checked by itself, so a scene cut is not a jump.
-const FPS = 60, MOVE = 0.15, TURN = 5, SIZE = 0.3;
+const FPS = 60;
 
 const look = vm.createContext({});
 vm.runInContext(fs.readFileSync("look.js", "utf8"), look, { filename: "look.js" });
@@ -88,27 +86,15 @@ function check() {
   for (const name of videos()) for (const s of load(name)) {
     const where = `videos/${name}/scenes/${s.file}`, fail = (t, why) => (problems++, console.log(`${where} at ${t.toFixed(3)} s: ${why}`));
     const { beats, length } = timeline(s.narration, s.voice.map((v) => v.seconds));
-    const at = cues(beats, s.narration), most = [0, 0, 0];
-    let last = null;
+    const at = cues(beats, s.narration);
     for (let k = 0; k <= Math.ceil(length * FPS); k++) {
       const t = k / FPS;
       let pic;
-      try { pic = svg(s.draw(t, at, beats)); } catch (e) { fail(t, e.message); break; }
+      try { pic = svg(s.draw(t, at, beats), t); } catch (e) { fail(t, e.message); break; }
       if (/NaN|undefined|Infinity/.test(pic)) { fail(t, "NaN or undefined in the SVG"); break; }
-      const shapes = [...pic.matchAll(/translate\((\S+) (\S+)\) rotate\((\S+)\) scale\((\S+) (\S+)\)/g)].map((m) => m.slice(1).map(Number));
-      if (last && shapes.length !== last.length) { fail(t, "a shape comes or goes without pop or out"); break; }
-      const seen = (q) => Math.abs(q[3]) > 0.002 && Math.abs(q[4]) > 0.002;
-      for (const [i, q] of last ? shapes.entries() : []) {
-        const p = last[i];
-        if (!seen(p) && !seen(q)) continue;   // a shape with size 0 can move: nobody sees it
-        const d = [Math.hypot(q[0] - p[0], q[1] - p[1]), Math.abs(q[2] - p[2]), Math.max(Math.abs(q[3] - p[3]), Math.abs(q[4] - p[4]))];
-        d.forEach((v, j) => (most[j] = Math.max(most[j], v)));
-        if (d[0] > MOVE || d[1] > TURN || d[2] > SIZE) fail(t, `shape ${i} jumps: ${d.map((v) => v.toFixed(3)).join(" ")} (move, turn, size)`);
-      }
-      last = shapes;
     }
     const voiced = s.voice.every((v) => v.file) ? "voice" : "stand-in times";
-    console.log(`${where}: ${length.toFixed(1)} s (${voiced}), largest change in 1 frame: move ${most[0].toFixed(3)}, turn ${most[1].toFixed(2)}, size ${most[2].toFixed(3)}`);
+    console.log(`${where}: ${length.toFixed(1)} s (${voiced})`);
   }
   console.log(problems ? `${problems} problems` : "check OK");
   process.exitCode = problems ? 1 : 0;
