@@ -100,10 +100,6 @@ const look = (t, t0, t1, ex, ez = 0) => {   // look at one place from t0 to t1, 
   const m = settle(t - t0) - settle(t - t1);
   return { ex: 0.22 * ex * m, ez: 0.14 * ez * m, gaze: 1 - hold(t, t0 - 0.2, t1 + 0.3, 0.2), eye: 1 - 0.92 * shut(t, t0 - 0.05) };
 };
-const follow = (t, t0, t1, from = -1, to = 1) => {   // follow a thing that moves from one side to the other side
-  const m = hold(t, t0 - 0.25, t1 + 0.25, 0.25);
-  return { ex: 0.22 * (from + (to - from) * ease(t, t0, t1)) * m, gaze: 1 - m };
-};
 const glance = (t, t0, d = 1.2) => {   // look to one side, then to the other side
   const k = clamp((t - t0) / d);
   return { ex: 0.16 * Math.sin(2 * Math.PI * k) * Math.sin(Math.PI * k), gaze: 1 - Math.sin(Math.PI * k) };
