@@ -1,0 +1,3 @@
+# The no-mistakes test step runs this command. It matches the check step of .github/workflows/ci.yml.
+commands:
+  test: node vid.js check
